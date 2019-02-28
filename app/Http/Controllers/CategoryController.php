@@ -16,11 +16,12 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        return $request->all();
         $name = $request->input('name');
-        if(!empty($name)) {
-            $makes = Makes::query()->where('name',$name)->orWhere('name','like',"%$name%")->get()->all();
-            return response()->json(['makes' => $makes], 200);
+
+        if(isset($name)) {
+            $makes = Makes::query()->where('name',"$name")->orWhere('name','like',"%$name%")->get();
+            $models = Makes::query()->where('name','CL')->get()->first();
+            return response()->json(['makes' => $makes,'models' => $models], 200);
         }else   return response()->json([], 500);
     }
 

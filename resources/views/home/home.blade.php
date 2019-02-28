@@ -14,7 +14,7 @@
                 </form>
 
                 {{--SEARCH OF MAKE MODEL YEAR--}}
-                <form method="GET" action="" class="form-inline mt-5">
+                <form class="form-inline mt-5">
                     <div class="row">
                         <div class="col">
                             <select class="custom-select" id="make">
