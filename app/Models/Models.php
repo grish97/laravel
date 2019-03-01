@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Models extends Model
 {
-   public function make() {
-       return $this->belongsTo('App\\Makes');
+    protected $table = 'model';
+    protected $fillable = ['name'];
+
+   public function make_model() {
+       return $this->hasOne(Make_Models::class,'model_id','id');
    }
 }

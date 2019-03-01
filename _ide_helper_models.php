@@ -23,22 +23,44 @@ namespace App\Models{
 
 namespace App\Models{
 /**
- * App\Models\Make
+ * App\Models\Makes
  *
+ * @property int $id unique auto-incremented value
+ * @property string $name unique name
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Make_Models $make_model
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Models[] $model
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Makes newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Makes newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Makes query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Makes whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Makes whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Makes whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Makes whereUpdatedAt($value)
  */
-	class Make extends \Eloquent {}
+	class Makes extends \Eloquent {}
 }
 
 namespace App\Models{
 /**
  * App\Models\Make_Models
  *
+ * @property int $id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $make_id
+ * @property int $model_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Makes[] $make
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Models[] $model
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Make_Models newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Make_Models newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Make_Models query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Make_Models whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Make_Models whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Make_Models whereMakeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Make_Models whereModelId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Make_Models whereUpdatedAt($value)
  */
 	class Make_Models extends \Eloquent {}
 }
@@ -47,9 +69,18 @@ namespace App\Models{
 /**
  * App\Models\Models
  *
+ * @property int $id unique auto-incremented value
+ * @property string $name unique name
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Make_Models $make_model
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Models newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Models newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Models query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Models whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Models whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Models whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Models whereUpdatedAt($value)
  */
 	class Models extends \Eloquent {}
 }

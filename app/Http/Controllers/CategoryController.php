@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Makes;
+use App\Models\Models;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -14,15 +15,21 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index(Request $request,Makes $makesModel)
     {
-        $name = $request->input('name');
+        $this->validate($request,[
+            'name' => 'required'
+        ]);
+        $name = $request->get('name');
 
-        if(isset($name)) {
-            $makes = Makes::query()->where('name',"$name")->orWhere('name','like',"%$name%")->get();
-            $models = Makes::query()->where('name','CL')->get()->first();
-            return response()->json(['makes' => $makes,'models' => $models], 200);
-        }else   return response()->json([], 500);
+        $makes = $makesModel->with('model')->get();
+
+        if(count($makes)){
+            return response()->json($makes, 200);
+        }else {
+            return response()->json('No make found', 404);
+        }
+
     }
 
     /**

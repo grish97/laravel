@@ -8,7 +8,6 @@ class Request
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-
         $.ajax({
             url : url,
             data : formData,
@@ -16,20 +15,29 @@ class Request
             dataType : 'json',
             contentType: false,
             processData: false,
-            success : (data, status) => {
-                let makes = data.makes;
-                request.generateView(makes);
+            success : (data) =>
+            {
+                console.log(data);
+                request.generateView(data);
             },
-            error : (data, status) =>  {
-                let elem = `<h3 class="text-center">Empty</h3>`;
-                $(`#view`).append(elem);
-                return false;
+            error : (data) =>  {
+                console.error(data.responseText)
             },
         });
     }
 
     generateView(data) {
-        console.log(data);
+        $(`.table`).removeClass(`d-none`);
+
+        $.each(data, (key, value) => {
+            console.log(value);
+            let tr  = ` <tr>
+                        <th class="row">${key}</th>
+                        <td>${value.name}</td>
+                        <td>${(value.model[key])}</td>
+                        </tr>`;
+            $(`tbody`).append(tr);
+        })
     }
 }
 

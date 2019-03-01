@@ -8,11 +8,7 @@ class Makes extends Model
 {
     protected $table = 'make';
 
-    public function models() {
-        return $this->hasOne('App\\Models\\Models');
-    }
-
-    public function make_models() {
-        return $this->hasOne('App\\Make_Models');
+    public function model() {
+        return $this->hasManyThrough(Models::class,Make_Models::class,'model_id','id','id','model_id');
     }
 }

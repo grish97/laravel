@@ -6,7 +6,7 @@
             <div class="row align-items-end">
                 {{--SEARCH OF NAME--}}
                 <form class="mr-5 formMake">
-                    <label for="name">Category or Path: </label>
+                    <label for="name">Make or Part: </label>
                     <div class="form-inline">
                         <input type="text" id="name" name="name" class="form-control mr-3">
                         <button type="submit" class="btn btn-info request" data-action="/getCar">Search</button>
@@ -19,9 +19,9 @@
                         <div class="col">
                             <select class="custom-select" id="make">
                                 <option value="">Make</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
+                                @foreach($makes as $key => $make)
+                                    <option value="{{$key}}">{{$make->name}}</option>
+                                @endforeach;
                             </select>
                         </div>
                         <div class="col">
@@ -46,8 +46,19 @@
             </div>
         </div>
 
-        <div id="view">
-            <button class="btn btn-danger clear">Reset</button>
+        <div id="view" class="mt-5">
+            <table class="table d-none">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th>Year</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 @endsection
