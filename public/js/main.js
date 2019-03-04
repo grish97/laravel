@@ -17,27 +17,50 @@ class Request
             processData: false,
             success : (data) =>
             {
-                console.log(data);
+
+                if(data.length === 0) {
+                    console.log('Empty Data');
+                    $(form).find(`#name`).val(``);
+                    return false;
+                }
                 request.generateView(data);
             },
             error : (data) =>  {
-                console.error(data.responseText)
+                console.log(data.responseText);
             },
         });
     }
 
     generateView(data) {
-        $(`.table`).removeClass(`d-none`);
-
-        $.each(data, (key, value) => {
-            console.log(value);
-            let tr  = ` <tr>
-                        <th class="row">${key}</th>
-                        <td>${value.name}</td>
-                        <td>${(value.model[key])}</td>
-                        </tr>`;
-            $(`tbody`).append(tr);
-        })
+       if(data.desc) {
+           $.each(data.desc,(key,value) => {
+               console.log(value.part);
+               let card = `<div class="card">
+                                <img src="/images/300x200.png" alt="Part Image">
+                                <div class="card-body">                                  
+                                    <p class="card-text"><span class="font-weight-bold">EN</span>: ${value.en}</p>
+                                    <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.es}</p>
+                                     <p class="card-text"><span class="font-weight-bold">Part Number:</span> ${value.part.part}</p>
+                                    <a href="" class="btn btn-info">Show</a>
+                                </div>
+                            </div>`;
+               $(`.card-columns`).append(card);
+           });
+       }else {
+           $.each(data.parts,(key,value) => {
+               console.log(value.part);
+               let card = `<div class="card">
+                                <img src="/images/300x200.png" alt="Part Image">
+                                <div class="card-body">                                    
+                                    <p class="card-text"><span class="font-weight-bold">EN</span>: ${value.description.en}</p>
+                                    <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.description.es}</p>
+                                    <p class="card-text"><span class="font-weight-bold">Part Number: </span> ${value.part}</p>
+                                    <a href="" class="btn btn-info">Show</a>
+                                </div>
+                            </div>`;
+               $(`.card-columns`).append(card);
+           });
+       }
     }
 }
 

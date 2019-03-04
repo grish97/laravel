@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
+use App\Models\Categories;
 use App\Models\Makes;
 use App\Models\Models;
+use App\Models\Parts;
+use App\Models\Descriptions;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -15,21 +17,23 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request,Makes $makesModel)
+    public function index(Request $request,Descriptions $description,Parts $part)
     {
         $this->validate($request,[
             'name' => 'required'
         ]);
+
         $name = $request->get('name');
 
-        $makes = $makesModel->with('model')->get();
-
-        if(count($makes)){
-            return response()->json($makes, 200);
+        if(is_numeric($name)) {
+            $parts = $part::query()->where('part','like',"%$name")->with('description')->get();
+            if(count($parts) != 0) return response()->json(['parts' => $parts]);
+            else return response()->json([]);
         }else {
-            return response()->json('No make found', 404);
+            $desc = $description::query()->with('part')->select('part')->get();
+            if(count($desc) != 0) return response()->json(['desc' => $desc]);
+            else return response()->json([]);
         }
-
     }
 
     /**

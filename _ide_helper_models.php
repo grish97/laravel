@@ -14,9 +14,9 @@ namespace App\Models{
 /**
  * App\Models\Category
  *
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Category newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Category newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Category query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Categories newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Categories newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Categories query()
  */
 	class Category extends \Eloquent {}
 }
@@ -89,9 +89,9 @@ namespace App\Models{
 /**
  * App\Models\Part
  *
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Part newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Part newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Part query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Parts newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Parts newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Parts query()
  */
 	class Part extends \Eloquent {}
 }
