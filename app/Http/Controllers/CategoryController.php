@@ -30,7 +30,7 @@ class CategoryController extends Controller
             if(count($parts) != 0) return response()->json(['parts' => $parts]);
             else return response()->json([]);
         }else {
-            $desc = $description::query()->with('part')->select('part')->get();
+            $desc = $description::query()->where('en','like',"%$name%")->orWhere('es','like',"%$name%")->wite('part')->get();
             if(count($desc) != 0) return response()->json(['desc' => $desc]);
             else return response()->json([]);
         }
