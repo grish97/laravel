@@ -3,11 +3,6 @@ class Request
     getData (url,form) {
         let formData = new FormData(form);
 
-        $.ajaxSetup({
-            headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
         $.ajax({
             url : url,
             data : formData,
@@ -31,42 +26,46 @@ class Request
         });
     }
 
+    fillSelect (id,value) {
+        $.ajax({
+            url : '/fill-select',
+            method : 'post',
+            data : {
+              id    : id,
+              value : value,
+            },
+            dataType : 'json',
+        }).done(function(data) {
+
+        });
+    }
+
     generateView(data) {
        let cardBlock = $(`.card-columns`);
        if(cardBlock.has(`.card`))  cardBlock.empty();
 
-       if(data.desc) {
-           $.each(data.desc,(key,value) => {
-               console.log(value);
-               let card = `<div class="card">
-                                <img src="/images/300x200.png" alt="Part Image">
-                                <div class="card-body">                                  
-                                    <p class="card-text"><span class="font-weight-bold">EN</span>: ${value.en}</p>
-                                    <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.es}</p>
-                                     <p class="card-text"><span class="font-weight-bold">Part Number:</span> ${value.part.part}</p>
-                                    <a href="" class="btn btn-info">Show</a>
-                                </div>
-                            </div>`;
-               $(`.card-columns`).append(card);
-           });
-       }else {
-           $.each(data.parts,(key,value) => {
-               let card = `<div class="card">
-                                <img src="/images/300x200.png" alt="Part Image">
-                                <div class="card-body">                                    
-                                    <p class="card-text"><span class="font-weight-bold">EN</span>: ${value.description.en}</p>
-                                    <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.description.es}</p>
-                                    <p class="card-text"><span class="font-weight-bold">Part Number: </span> ${value.part}</p>
-                                    <a href="" class="btn btn-info">Show</a>
-                                </div>
-                            </div>`;
-               $(`.card-columns`).append(card);
-           });
-       }
+       $.each(data,(key,value) => {
+           let card = `<div class="card">
+                            <img src="/images/300x200.png" alt="Part Image">
+                            <div class="card-body">
+                                <p class="card-text"><span class="font-weight-bold">EN</span>: ${value.en}</p>
+                                <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.es}</p>
+                                 <p class="card-text"><span class="font-weight-bold">Part Number:</span> ${value.part}</p>
+                                <a href="" class="btn btn-info">Show</a>
+                            </div>
+                        </div>`;
+           $(`.card-columns`).append(card);
+       });
     }
 }
 
 let request = new Request();
+
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
 
 $(document).on(`submit`,`.formMake`,(e) => {
     e.preventDefault();
@@ -75,6 +74,9 @@ $(document).on(`submit`,`.formMake`,(e) => {
     if(url) request.getData(url,form);
 });
 
-$(document).on(`click`,`.clear`,(e) => {
-    $(`#view`).empty();
+$(document).on('change','select',(e) => {
+    let elem = $(e.target),
+        id = elem.attr(`id`),
+        value = elem.val();
+    request.fillSelect(id,value);
 });

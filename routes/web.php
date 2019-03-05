@@ -13,4 +13,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', 'HomeController@index');
-Route::post('/getCar','CategoryController@index');
+Route::post('/getCar','SearchController@index');
+Route::post('/fill-select','SearchController@fillSelect');

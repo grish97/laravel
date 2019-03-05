@@ -8,4 +8,5 @@ class Models extends Model
 {
     protected $table = 'model';
     protected $fillable = ['name'];
+
 }

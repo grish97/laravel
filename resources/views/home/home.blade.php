@@ -14,35 +14,37 @@
                 </form>
 
                 {{--SEARCH OF MAKE MODEL YEAR--}}
-                <form class="form-inline mt-5">
+                <form class="form-inline mt-5" id="selectForm">
                     <div class="row">
                         <div class="col">
                             <label for="make"></label>
                             <select class="custom-select" id="make">
                                 <option value="">Make</option>
                                 @foreach($makes as $key => $make)
-                                    <option value="{{$key}}">{{$make->name}}</option>
+                                    <option>{{$make->name}}</option>
                                 @endforeach;
                             </select>
                         </div>
                         <div class="col">
+                            <label for="model"></label>
                             <select class="custom-select" id="model">
                                 <option value="">Model</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
+                                @foreach($models as $key => $model)
+                                    <option>{{$model->name}}</option>
+                                @endforeach;
                             </select>
                         </div>
                         <div class="col">
+                            <label for="year"></label>
                             <select class="custom-select" id="year">
                                 <option value="">Year</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
+                                @foreach($years as $key => $year)
+                                    <option>{{$year->year}}</option>
+                                @endforeach;
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-info ml-3">Search</button>
+                    <button type="submit" class="btn btn-info ml-3" data-action="/select-search">Search</button>
                 </form>
             </div>
         </div>
