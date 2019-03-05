@@ -9,7 +9,7 @@ class Makes extends Model
     protected $table = 'make';
 
     public function model() {
-        return $this->hasManyThrough(Models::class,Make_Models::class,'model_id','id','make_id');
+        return $this->hasManyThrough(Models::class,Vehicle::class,'make_id','id','id');
     }
 
     public function year() {
