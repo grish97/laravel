@@ -32,9 +32,12 @@ class Request
     }
 
     generateView(data) {
+       let cardBlock = $(`.card-columns`);
+       if(cardBlock.has(`.card`))  cardBlock.empty();
+
        if(data.desc) {
            $.each(data.desc,(key,value) => {
-               console.log(value.part);
+               console.log(value);
                let card = `<div class="card">
                                 <img src="/images/300x200.png" alt="Part Image">
                                 <div class="card-body">                                  
@@ -48,7 +51,6 @@ class Request
            });
        }else {
            $.each(data.parts,(key,value) => {
-               console.log(value.part);
                let card = `<div class="card">
                                 <img src="/images/300x200.png" alt="Part Image">
                                 <div class="card-body">                                    
