@@ -26,18 +26,36 @@ class Request
         });
     }
 
-    fillSelect (id,value) {
+    fillSelect (elemId,id) {
         $.ajax({
             url : '/fill-select',
             method : 'post',
             data : {
-              id    : id,
-              value : value,
+              elemId : elemId,
+              id : id,
             },
             dataType : 'json',
         }).done(function(data) {
-
+            request.generateSelect(data,elemId);
         });
+    }
+
+    generateSelect(data,elemId) {
+        if(elemId === 'make') {
+            $(`#model`).empty();
+            $.each(data,(key,value) => {
+                let option = `<option value="${value.id}">${value.name}</option>`;
+                $(`#model`).append(option);
+            });
+        }else if(elemId === 'model') {
+            console.log($(`#make`).find(`option[value=${data.make_id}]`).attr(`selected`,`selected`));
+        }else if(elemId === 'year') {
+            $(`#year`).empty();
+            $.each(data,(key,value) => {
+                let option = `<option value="${value.id}">${value.name}</option>`;
+                $(`#make`).append(option);
+            })
+        }
     }
 
     generateView(data) {
@@ -76,7 +94,7 @@ $(document).on(`submit`,`.formMake`,(e) => {
 
 $(document).on('change','select',(e) => {
     let elem = $(e.target),
-        id = elem.attr(`id`),
-        value = elem.val();
-    request.fillSelect(id,value);
+        elemId = elem.attr(`id`),
+        id = elem.val();
+    request.fillSelect(elemId,id);
 });

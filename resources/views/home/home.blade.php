@@ -21,7 +21,7 @@
                             <select class="custom-select" id="make">
                                 <option value="">Make</option>
                                 @foreach($makes as $key => $make)
-                                    <option>{{$make->name}}</option>
+                                    <option value="{{$make->id}}">{{$make->name}}</option>
                                 @endforeach;
                             </select>
                         </div>
@@ -30,7 +30,7 @@
                             <select class="custom-select" id="model">
                                 <option value="">Model</option>
                                 @foreach($models as $key => $model)
-                                    <option>{{$model->name}}</option>
+                                    <option value="{{$model->id}}">{{$model->name}}</option>
                                 @endforeach;
                             </select>
                         </div>
@@ -39,7 +39,7 @@
                             <select class="custom-select" id="year">
                                 <option value="">Year</option>
                                 @foreach($years as $key => $year)
-                                    <option>{{$year->year}}</option>
+                                    <option value="{{$year->id}}">{{$year->year}}</option>
                                 @endforeach;
                             </select>
                         </div>

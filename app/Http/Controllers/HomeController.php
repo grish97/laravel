@@ -13,7 +13,7 @@ class HomeController extends Controller
    public function index() {
        $makes = Makes::query()->get();
        $models = Models::query()->get();
-       $years = Vehicle::query()->select('year')->get();
+       $years = Vehicle::query()->get();
        return view('home.home',compact('makes','models','years'));
    }
 }

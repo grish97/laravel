@@ -6,6 +6,7 @@ use App\Models\Categories;
 use App\Models\Makes;
 use App\Models\Models;
 use App\Models\Parts;
+use App\Models\Vehicle;
 use App\Models\Descriptions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,10 +38,21 @@ class SearchController extends Controller
     }
 
     public function fillSelect(Request $request) {
+        $elemId = $request->elemId;
         $id = $request->id;
-        $value = $request->value;
-        $data = Makes::query()->where('name',"$value")->with('model')->get();
-        return response()->json($data);
+        if($elemId === 'make') {
+            $models = Models::query()
+                ->leftJoin('make_models','model.id','=','make_models.model_id')
+                ->where('make_id','=',"$id")
+                ->get();
+            return response()->json($models);
+        }elseif($elemId === 'model') {
+            $make = Makes::query()
+                ->where('model_id','=',"$id")
+                ->leftJoin('make_models','make.id','make_models.make_id')
+                ->get()->first();
+            return response()->json($make);
+        }
     }
 
     /**
