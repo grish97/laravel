@@ -11,4 +11,8 @@ class Makes extends Model
     public function model() {
         return $this->hasMany(Models::class,'id','id');
     }
+
+    public function vehicle() {
+        return $this->hasOne(Vehicle::class,'make_id','id');
+    }
 }

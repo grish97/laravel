@@ -43,13 +43,28 @@ class Request
     generateSelect(data,elemId) {
         if(elemId === 'make') {
             $(`#model`).empty();
+            $(`#year`).empty();
             $.each(data,(key,value) => {
-                let option = `<option value="${value.id}">${value.name}</option>`;
-                $(`#model`).append(option);
+                let optionModel = `<option value="${value.id}">${value.name}</option>`;
+                $(`#model`).append(optionModel);
+                if(value.vehicle) {
+                    let optionYear = `<option value="${value.vehicle.id}">${value.vehicle.year}</option>`;
+                    $(`#year`).append(optionYear)
+                }
             });
-        }else if(elemId === 'model') {
-            console.log($(`#make`).find(`option[value=${data.make_id}]`).attr(`selected`,`selected`));
-        }else if(elemId === 'year') {
+        }
+        if(elemId === 'model') {
+            if(data.makeYear) {
+                console.log(data.makeYear.year);
+                let option = `<option value="${data.makeYear.id}">${data.makeYear.year}</option>`;
+                $(`#year`).empty();
+                $(`#year`).append(option);
+            }
+
+            $(`#make`).find(`option[value=${data.make.id}]`).attr(`selected`,`selected`);
+
+        }
+        if(elemId === 'year') {
             $(`#year`).empty();
             $.each(data,(key,value) => {
                 let option = `<option value="${value.id}">${value.name}</option>`;

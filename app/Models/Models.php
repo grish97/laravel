@@ -9,4 +9,7 @@ class Models extends Model
     protected $table = 'model';
     protected $fillable = ['name'];
 
+    public function vehicle() {
+        return $this->hasOne(Vehicle::class,'model_id','id');
+    }
 }

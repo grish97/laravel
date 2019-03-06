@@ -37,21 +37,24 @@ class SearchController extends Controller
 
     }
 
-    public function fillSelect(Request $request) {
+    public function fillSelect(Request $request,Makes $makes,Models $model,Vehicle $vehicle) {
         $elemId = $request->elemId;
         $id = $request->id;
+        $joinData = $model::query()
+            ->leftJoin('make_models','model.id','=','make_models.model_id')
+            ->with('vehicle');
+
         if($elemId === 'make') {
-            $models = Models::query()
-                ->leftJoin('make_models','model.id','=','make_models.model_id')
-                ->where('make_id','=',"$id")
-                ->get();
-            return response()->json($models);
+            $data = $joinData->where('make_id','=',"$id") ->get();
+            return response()->json($data);
         }elseif($elemId === 'model') {
-            $make = Makes::query()
-                ->where('model_id','=',"$id")
-                ->leftJoin('make_models','make.id','make_models.make_id')
-                ->get()->first();
-            return response()->json($make);
+            $makeYear = $joinData->where('model_id',"$id")->get()->first();
+            $make = $makes::query()->where('id',$makeYear->make_id)->get()->first();
+            return response()->json(['make' => $make,'makeYear' => $makeYear]);
+        }elseif($elemId === 'year') {
+            $data = $vehicle::query()->where('id','=',$id)->with('model')->get();
+
+            return response()->json($data);
         }
     }
 
