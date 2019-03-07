@@ -69,7 +69,15 @@ class Request
             yearSelect.append(value);
         }
         if(elemId === 'year') {
-            makeSelect.find(`option[value='${data.make.id}']`).attr(`selected`,`selected`);
+            makeSelect.empty();
+            modelSelect.empty();
+            $.each(data,(key,value) => {
+                let makeOption = `<option value="${value.id}">${value.name}</option>`,
+                    modelOption = `<option value="${value.model.id}">${value.model.name}</option>`;
+                makeSelect.append(makeOption);
+                modelSelect.append(modelOption);
+            })
+            // makeSelect.find(`option[value='${data.make.id}']`).attr(`selected`,`selected`);
         }
     }
 

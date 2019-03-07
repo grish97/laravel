@@ -57,9 +57,11 @@ class SearchController extends Controller
                     ->select('year','make_id')
                     ->where('id','=',$id)
                     ->get()->first();
-                $_model = $vehicle::query()->where('year','=',$year->year)->join('make','vehicle.make_id','make.id')->with('model')->get();
-                $make = $makes::query()->where('id','=',$year-> make_id)->get()->first();
-                return response()->json(['models' => $_model,'make' => $make]);
+                $data = $vehicle::query()
+                    ->where('year','=',$year->year)
+                    ->join('make','vehicle.make_id','make.id')
+                    ->with('model')->get();
+                return response()->json($data);
             }
         }
     }
