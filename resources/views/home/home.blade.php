@@ -5,7 +5,7 @@
         <div class="jumbotron">
             <div class="row align-items-end">
                 {{--SEARCH OF NAME--}}
-                <form class="mr-5 formMake">
+                <form class="mr-4 formMake">
                     <label for="name">Description or Part: </label>
                     <div class="form-inline">
                         <input type="text" id="name" name="name" class="form-control mr-3">
@@ -45,6 +45,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn btn-info ml-3" data-action="/select-search">Search</button>
+                    <button type="button" class="btn btn-danger reset ml-2">Reset</button>
                 </form>
             </div>
         </div>

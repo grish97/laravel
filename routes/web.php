@@ -15,3 +15,4 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', 'HomeController@index');
 Route::post('/getCar','SearchController@index');
 Route::post('/fill-select','SearchController@fillSelect');
+Route::post('/reset','SearchController@reset');
