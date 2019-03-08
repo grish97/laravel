@@ -69,6 +69,7 @@ class Request
             yearSelect.append(value);
         }
         if(elemId === 'year') {
+            console.log(data);
             makeSelect.empty();
             modelSelect.empty();
             $.each(data,(key,value) => {
@@ -77,7 +78,6 @@ class Request
                 makeSelect.append(makeOption);
                 modelSelect.append(modelOption);
             })
-            // makeSelect.find(`option[value='${data.make.id}']`).attr(`selected`,`selected`);
         }
     }
 
@@ -103,25 +103,24 @@ class Request
         let make = $(`#make`),
             model = $(`#model`),
             year = $(`#year`);
-        make.find(`option[value='']`).attr(`selected`,`selected`);
-        model.empty();
-        year.empty();
+        make.val(``).find(`option[value='']`).attr(`selected`,`selected`);
+        model.empty().append(`<option value=''>Model</option>`);
+        year.empty().append(`<option value=''>Year</option>`);
 
         $.ajax({
             url : `/reset`,
             method : `post`,
             dataType : `json`,
         }).done(function(data) {
-            console.log(data.years.length,data.models.length)
-           // $.each(data.models, (key,value) => {
-           //     let option = `<option value="${value.id}">${value.name}</option>`;
-           //     model.append(option);
-           // });
-           //
-           //  $.each(data.years, (key,value) => {
-           //      let option = `<option value="${value.id}">${value.year}</option>`;
-           //      year.append(option);
-           //  });
+           $.each(data.models, (key,value) => {
+               let option = `<option value="${value.id}">${value.name}</option>`;
+               model.append(option);
+           });
+
+            $.each(data.years, (key,value) => {
+                let option = `<option value="${value.id}">${value.year}</option>`;
+                year.append(option);
+            });
         });
     }
 }

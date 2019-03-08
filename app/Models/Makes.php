@@ -13,6 +13,6 @@ class Makes extends Model
     }
 
     public function vehicle() {
-        return $this->hasOne(Vehicle::class,'make_id','id');
+        return $this->hasOne(Vehicle::class,'make_id','id')->groupBy('year')->orderBy('year','desc');
     }
 }

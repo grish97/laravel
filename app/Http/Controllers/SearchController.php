@@ -45,7 +45,7 @@ class SearchController extends Controller
 
         if(!empty($id)) {
             if($elemId === 'make') {
-                $data = $joinData->where('make_id','=',"$id") ->get();
+                $data = $joinData->where('make_id','=',"$id")->get();
                 return response()->json($data);
             }elseif($elemId === 'model') {
                 $makeYear = $joinData->where('model_id',"$id")->get()->first();
@@ -54,13 +54,15 @@ class SearchController extends Controller
                 return response()->json(['make' => $make,'makeYear' => $makeYear['vehicle']]);
             }elseif($elemId === 'year') {
                 $year = $vehicle::query()
-                    ->select('year','make_id')
+                    ->select('year')
                     ->where('id','=',$id)
-                    ->get()->first();
+                    ->get()
+                    ->first();
                 $data = $vehicle::query()
                     ->where('year','=',$year->year)
-                    ->join('make','vehicle.make_id','make.id')
-                    ->with('model')->get();
+                    ->groupBy('model_id')
+                    ->with('model')
+                    ->get();
                 return response()->json($data);
             }
         }
@@ -68,7 +70,7 @@ class SearchController extends Controller
 
     public function reset() {
         $models = Models::query()->get();
-        $years = Vehicle::query()->get();
+        $years =  Vehicle::query()->select('id', 'year')->groupBy('year')->orderBy('year','desc')->get();
         return response()->json(['models' => $models,'years' => $years]);
     }
 
