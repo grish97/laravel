@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Categories;
 use App\Models\Makes;
 use App\Models\Models;
 use App\Models\Parts;
@@ -39,19 +38,23 @@ class SearchController extends Controller
     public function fillSelect(Request $request,Makes $makes,Models $model,Vehicle $vehicle) {
         $elemId = $request->elemId;
         $id = $request->id;
-        $joinData = $model::query()
-            ->leftJoin('make_models','model.id','=','make_models.model_id')
-            ->with('vehicle');
 
         if(!empty($id)) {
             if($elemId === 'make') {
-                $data = $joinData->where('make_id','=',"$id")->get();
+                $data = $vehicle::query()
+                    ->where('make_id','=',"$id")
+                    ->with('model')
+                    ->groupBy('model_id')
+                    ->get();
                 return response()->json($data);
             }elseif($elemId === 'model') {
-                $makeYear = $joinData->where('model_id',"$id")->get()->first();
-                $make = '';
-                if($makeYear !== null) $make = $makes::query()->where('id',$makeYear->make_id)->get()->first();
-                return response()->json(['make' => $make,'makeYear' => $makeYear['vehicle']]);
+                $data = $vehicle::query()
+                    ->where('model_id','=',$id)
+                    ->with('make')
+                    ->groupBy('make_id')
+                    ->get()
+                    ->first();
+                return response()->json($data);
             }elseif($elemId === 'year') {
                 $year = $vehicle::query()
                     ->select('year')
@@ -59,11 +62,18 @@ class SearchController extends Controller
                     ->get()
                     ->first();
                 $data = $vehicle::query()
-                    ->where('year','=',$year->year)
-                    ->groupBy('model_id')
-                    ->with('model')
+                    ->where('year','=',$year->year);
+                $make = $data
+                    ->select('make_id')
+                    ->with('make')
+                    ->groupBy('make_id')
                     ->get();
-                return response()->json($data);
+                $models = $data
+                    ->select('model_id')
+                    ->with('model')
+                    ->groupBy('model_id')
+                    ->get();
+                return response()->json(['make' => $make,'model' => $models]);
             }
         }
     }

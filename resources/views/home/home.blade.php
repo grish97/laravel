@@ -14,11 +14,12 @@
                 </form>
 
                 {{--SEARCH OF MAKE MODEL YEAR--}}
-                <form class="form-inline mt-5" id="selectForm">
+                <form  class="form-inline mt-5" id="selectForm" action="/view" method="post">
+                    @csrf
                     <div class="row">
                         <div class="col">
                             <label for="make"></label>
-                            <select class="custom-select" id="make">
+                            <select class="custom-select" id="make" name="make">
                                 <option value="">Make</option>
                                 @foreach($makes as $key => $make)
                                     <option value="{{$make->id}}">{{$make->name}}</option>
@@ -27,7 +28,7 @@
                         </div>
                         <div class="col">
                             <label for="model"></label>
-                            <select class="custom-select" id="model">
+                            <select class="custom-select" id="model" name="model">
                                 <option value="">Model</option>
                                 @foreach($models as $key => $model)
                                     <option value="{{$model->id}}">{{$model->name}}</option>
@@ -36,7 +37,7 @@
                         </div>
                         <div class="col">
                             <label for="year"></label>
-                            <select class="custom-select" id="year">
+                            <select class="custom-select" id="year" name="year">
                                 <option value="">Year</option>
                                 @foreach($years as $key => $year)
                                     <option value="{{$year->id}}">{{$year->year}}</option>
@@ -44,9 +45,9 @@
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-info ml-3" data-action="/select-search">Search</button>
-                    <button type="button" class="btn btn-danger reset ml-2">Reset</button>
+                    <button type="submit" class="btn btn-info ml-3">Search</button>
                 </form>
+                <button type="button" class="btn btn-danger reset ml-2">Reset</button>
             </div>
         </div>
 

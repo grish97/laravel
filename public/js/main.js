@@ -50,32 +50,33 @@ class Request
             yearSelect.empty();
 
             $.each(data,(key,value) => {
-                let optionModel = `<option value="${value.id}">${value.name}</option>`;
+                let optionModel = `<option value="${value.model.id}">${value.model.name}</option>`;
                 let optionYear = `<option value="">2019</option>`;
-                modelSelect.append(optionModel);
-                if(value.vehicle) {
-                    optionYear = `<option value="${value.vehicle.id}">${value.vehicle.year}</option>`;
+
+                if(value.year) {
+                    optionYear = `<option value="${value.id}">${value.year}</option>`;
                 }
+                modelSelect.append(optionModel);
                 yearSelect.append(optionYear)
 
             });
         }
         if(elemId === 'model') {
-            let value = `<option value="">2019</option>`;
+            let value = `<option value="${data.id}">${data.year}</option>`;
             yearSelect.empty();
-
-            if(makeSelect.val() === '') makeSelect.find(`option[value='${data.make.id}']`).attr(`selected`,`selected`);
-            if(data.makeYear) value = `<option value="${data.makeYear.id}">${data.makeYear.year}</option>`;
+            makeSelect.find(`option[value='${data.make.id}']`).attr(`selected`,`selected`);
             yearSelect.append(value);
         }
         if(elemId === 'year') {
-            console.log(data);
             makeSelect.empty();
             modelSelect.empty();
-            $.each(data,(key,value) => {
-                let makeOption = `<option value="${value.id}">${value.name}</option>`,
-                    modelOption = `<option value="${value.model.id}">${value.model.name}</option>`;
+            $.each(data.make,(key,value) => {
+                let makeOption = `<option value="${value.make.id}">${value.make.name}</option>`;
                 makeSelect.append(makeOption);
+            });
+
+            $.each(data.model,(key,value) => {
+                let  modelOption = `<option value="${value.model.id}">${value.model.name}</option>`;
                 modelSelect.append(modelOption);
             })
         }

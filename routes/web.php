@@ -16,3 +16,4 @@ Route::get('/', 'HomeController@index');
 Route::post('/getCar','SearchController@index');
 Route::post('/fill-select','SearchController@fillSelect');
 Route::post('/reset','SearchController@reset');
+Route::post('/show','SearchController@show');
