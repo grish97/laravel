@@ -1,5 +1,11 @@
 class Request
 {
+    constructor() {
+        this.make = false;
+        this.model = false;
+        this.year = false;
+    }
+
     getData (url,form) {
         let formData = new FormData(form);
 
@@ -46,28 +52,34 @@ class Request
             modelSelect = $(`#model`);
 
         if(elemId === 'make') {
+            this.make = true;
             modelSelect.empty();
             yearSelect.empty();
 
-            $.each(data,(key,value) => {
+            $.each(data.models,(key,value) => {
                 let optionModel = `<option value="${value.model.id}">${value.model.name}</option>`;
-                let optionYear = `<option value="">2019</option>`;
-
-                if(value.year) {
-                    optionYear = `<option value="${value.id}">${value.year}</option>`;
-                }
                 modelSelect.append(optionModel);
-                yearSelect.append(optionYear)
+            });
 
+            $.each(data.years,(key,value) => {
+                let  optionYear = `<option value="${value.id}">${value.year}</option>`;
+                yearSelect.append(optionYear);
             });
         }
         if(elemId === 'model') {
-            let value = `<option value="${data.id}">${data.year}</option>`;
+            this.model = true;
             yearSelect.empty();
-            makeSelect.find(`option[value='${data.make.id}']`).attr(`selected`,`selected`);
-            yearSelect.append(value);
+            makeSelect.empty();
+
+            $.each(data,(key,value) => {
+                let makeOption = `<option value="${value.make.id}">${value.make.name}</option>`,
+                    yearOption = `<option value="${value.id}">${value.year}</option>`;
+                yearSelect.append(yearOption);
+                makeSelect.append(makeOption);
+            });
         }
         if(elemId === 'year') {
+            this.year = true;
             makeSelect.empty();
             modelSelect.empty();
             $.each(data.make,(key,value) => {
@@ -83,8 +95,9 @@ class Request
     }
 
     generateView(data) {
-       let cardBlock = $(`.card-columns`);
-       if(cardBlock.has(`.card`))  cardBlock.empty();
+        $(`.card-columns`).empty();
+        $(`.showSelected`).addClass(`d-none`);
+        $(`.showSelected tbody tr`).empty();
 
        $.each(data,(key,value) => {
            let card = `<div class="card">
@@ -100,19 +113,76 @@ class Request
        });
     }
 
+    showSelected() {
+        let make = this.make,
+            model = this.model,
+            year = this.year,
+            formData = null;
+
+        let makeSelect = $(`#make`),
+            modelSelect = $(`#model`),
+            yearSelect = $(`#year`);
+
+        if(make && !model && !year) {
+            formData = {make : makeSelect.val()};
+        }else if((make && model && !year) || (!make && model && !year) || (!make && model && year)) {
+            formData = {model : modelSelect.val()};
+        }else if(!make && !model && year) {
+            formData = {year : yearSelect.val()};
+        }
+
+            $.ajax({
+               url : `/showSelected`,
+               type : `post`,
+               dataType : `json`,
+               data : {formData : formData},
+            }).done(function(data) {
+                let showSelected = $(`.showSelected`);
+                showSelected.removeClass(`d-none`);
+
+                if($.isArray(data)) {
+                    $.each(data, (key,value) => {
+                        let block = `<tr>
+                                          <th scope="row">${key+1}</th>
+                                          <td>${value.make.name}</td>
+                                          <td>${value.model.name}</td>
+                                          <td>${value.year}</td>
+                                          <td><a href="show?" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>
+                                      </tr>`;
+                        $(`.showSelected tbody`).append(block);
+                    })
+                }
+
+            });
+    }
+
     reset() {
         let make = $(`#make`),
             model = $(`#model`),
-            year = $(`#year`);
-        make.val(``).find(`option[value='']`).attr(`selected`,`selected`);
+            year = $(`#year`),
+            showSelected = $(`.showSelected`);
+
+        make.empty().append(`<option value=''>Make</option>`);
         model.empty().append(`<option value=''>Model</option>`);
         year.empty().append(`<option value=''>Year</option>`);
+
+        showSelected.find(`tbody tr`).empty();
+        showSelected.addClass(`d-none`);
+
+        this.make = false;
+        this.model = false;
+        this.year = false;
 
         $.ajax({
             url : `/reset`,
             method : `post`,
             dataType : `json`,
         }).done(function(data) {
+           $.each(data.makes,(key,value) => {
+               let option = `<option value="${value.id}">${value.name}</option>`;
+               make.append(option);
+           });
+
            $.each(data.models, (key,value) => {
                let option = `<option value="${value.id}">${value.name}</option>`;
                model.append(option);
@@ -149,5 +219,12 @@ $(document).on('change','select',(e) => {
 });
 
 $(document).on(`click`,`.reset`,(e) => {
+    e.preventDefault();
    request.reset();
+});
+$(document).on(`submit`,`#selectForm`,(e) => {
+    e.preventDefault();
+    $(`.showSelected tbody tr`).empty();
+    $(`.card-columns`).empty();
+    request.showSelected();
 });

@@ -42,18 +42,21 @@ class SearchController extends Controller
         if(!empty($id)) {
             if($elemId === 'make') {
                 $data = $vehicle::query()
-                    ->where('make_id','=',"$id")
+                    ->where('make_id','=',"$id");
+                $models = $data
                     ->with('model')
                     ->groupBy('model_id')
                     ->get();
-                return response()->json($data);
+                $years = $data
+                    ->orderBy('year','DESC')
+                    ->get();
+                return response()->json(['models' => $models,'years' => $years]);
             }elseif($elemId === 'model') {
                 $data = $vehicle::query()
                     ->where('model_id','=',$id)
                     ->with('make')
                     ->groupBy('make_id')
-                    ->get()
-                    ->first();
+                    ->get();
                 return response()->json($data);
             }elseif($elemId === 'year') {
                 $year = $vehicle::query()
@@ -78,10 +81,42 @@ class SearchController extends Controller
         }
     }
 
-    public function reset() {
-        $models = Models::query()->get();
-        $years =  Vehicle::query()->select('id', 'year')->groupBy('year')->orderBy('year','desc')->get();
-        return response()->json(['models' => $models,'years' => $years]);
+    public function reset(Makes $make, Models $model,Vehicle $vehicle) {
+        $makes = $make::query()->groupBy('name')->get();
+        $models = $model::query()->groupBy('name')->get();
+        $years =  $vehicle::query()->select('id', 'year')->groupBy('year')->orderBy('year','desc')->get();
+        return response()->json(['makes' => $makes,'models' => $models,'years' => $years]);
+    }
+
+    public function showSelected(Request $request,Vehicle $vehicle) {
+        $select = $request->input('formData');
+
+        if(isset($select['make'])) {
+            $data = $vehicle::query()
+                ->where('make_id','=',$select['make'])
+                ->with('make','model')
+                ->groupBy('model_id')
+                ->orderBy('year', 'DESC')
+                ->get();
+        }elseif(isset($select['model'])) {
+            $data = $vehicle::query()
+                ->where('model_id','=',$select['model'])
+                ->with('make','model')
+                ->orderBy('year', 'DESC')
+                ->get();
+        }elseif(isset($select['year'])) {
+            $year = $vehicle::query()
+                ->where('id','=',$select['year'])
+                ->get()
+                ->first();
+            $data = $vehicle::query()
+                ->where('year','=',$year['year'])
+                ->with('make','model')
+                ->groupBy('model_id')
+                ->orderBy('year', 'DESC')
+                ->get();
+        }
+        return response()->json($data);
     }
 
     /**
@@ -92,7 +127,7 @@ class SearchController extends Controller
      */
     public function show($id)
     {
-        //
+
     }
 
 

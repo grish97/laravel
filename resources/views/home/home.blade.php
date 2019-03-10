@@ -14,7 +14,7 @@
                 </form>
 
                 {{--SEARCH OF MAKE MODEL YEAR--}}
-                <form  class="form-inline mt-5" id="selectForm" action="/view" method="post">
+                <form  class="form-inline mt-5" id="selectForm">
                     @csrf
                     <div class="row">
                         <div class="col">
@@ -47,12 +47,27 @@
                     </div>
                     <button type="submit" class="btn btn-info ml-3">Search</button>
                 </form>
-                <button type="button" class="btn btn-danger reset ml-2">Reset</button>
+                <button type="submit" class="btn btn-danger reset ml-2">Reset</button>
             </div>
         </div>
 
         <div id="view" class="mt-5">
             <div class="card-columns"></div>
+        </div>
+
+        <div class="showSelected d-none">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>N</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th>Year of production</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
 
     </div>
