@@ -18,16 +18,15 @@ class Request
             processData: false,
             success : (data) =>
             {
-
                 if(data.length === 0) {
-                    console.log('Empty Data');
+                    alert('Empty Data');
                     $(form).find(`#name`).val(``);
                     return false;
                 }
                 request.generateView(data);
             },
             error : (data) =>  {
-                console.log(data.responseText);
+                alert('This field is required')
             },
         });
     }
@@ -106,7 +105,7 @@ class Request
                                 <p class="card-text"><span class="font-weight-bold">EN</span>: ${value.en}</p>
                                 <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.es}</p>
                                  <p class="card-text"><span class=0"font-weight-bold">Part Number:</span> ${value.part}</p>
-                                <a href="" class="btn btn-info">Show</a>
+                                <a href="show-part/${value.id}" class="btn btn-info">Show</a>
                             </div>
                         </div>`;
            $(`.card-columns`).append(card);
@@ -131,11 +130,12 @@ class Request
             formData = {year : yearSelect.val()};
         }
 
+        if(formData !== null) {
             $.ajax({
-               url : `/showSelected`,
-               type : `post`,
-               dataType : `json`,
-               data : {formData : formData},
+                url : `/showSelected`,
+                type : `post`,
+                dataType : `json`,
+                data : {formData : formData},
             }).done(function(data) {
                 let showSelected = $(`.showSelected`);
                 showSelected.removeClass(`d-none`);
@@ -147,13 +147,34 @@ class Request
                                           <td>${value.make.name}</td>
                                           <td>${value.model.name}</td>
                                           <td>${value.year}</td>
-                                          <td><a href="show?" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>
+                                          <td><a href="show/${value.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>
                                       </tr>`;
                         $(`.showSelected tbody`).append(block);
                     })
                 }
 
             });
+        }else console.log(`Empty`);
+    }
+
+    showParts(url) {
+       $.ajax({
+           url : url,
+           method : 'get',
+           dataType : 'json',
+       }).done((data) => {
+           $.each(data,(key,value) => {
+               let card = `<div class="card">
+                            <img src="/images/300x200.png" alt="Part Image">
+                            <div class="card-body">
+                                 <p class="card-text"><span class="font-weight-bold">Part Number: </span> ${value.part}</p>   
+                                <p class="card-text"><span class="font-weight-bold">EN: </span> ${value.en}</p>
+                                <p class="card-text"><span class="font-weight-bold">ES: </span> ${value.es}</p>                                       
+                            </div>
+                        </div>`;
+               $(`.card-columns`).append(card);
+           });
+       });
     }
 
     reset() {
@@ -167,6 +188,8 @@ class Request
         year.empty().append(`<option value=''>Year</option>`);
 
         showSelected.find(`tbody tr`).empty();
+        $(`.card-columns`).empty();
+        $(`#name`).val(``);
         showSelected.addClass(`d-none`);
 
         this.make = false;
@@ -227,4 +250,12 @@ $(document).on(`submit`,`#selectForm`,(e) => {
     $(`.showSelected tbody tr`).empty();
     $(`.card-columns`).empty();
     request.showSelected();
+});
+$(document).on(`click`,`.showParts`,(e) => {
+    e.preventDefault();
+    let elem = $(e.target),
+        url = elem.attr(`data-action`);
+    elem.attr(`disabled`,`disabled`);
+    $(`.card-columns`).empty();
+    request.showParts(url);
 });

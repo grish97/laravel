@@ -19,10 +19,14 @@
         @stack('header-post-scripts')
     </head>
     <body>
-    @yield('content')
-    {{--SCRIPTS--}}
-    <script src="{{asset('/js/app.js')}}"></script>
-{{--    <script src="{{asset('../../node_modules/toastr/build/toastr.min.js')}}"></script>--}}
-    <script src="{{asset('/js/main.js')}}"></script>
+        {{--NAVBAR--}}
+        <nav class="navbar navbar-dark bg-dark">
+            <a href="/" class="navbar-brand">Home</a>
+        </nav>
+        {{--SECTION--}}
+        @yield('content')
+        {{--SCRIPTS--}}
+        <script src="{{asset('/js/app.js')}}"></script>
+        <script src="{{asset('/js/main.js')}}"></script>
     </body>
 </html>

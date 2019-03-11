@@ -6,7 +6,7 @@ use App\Models\Makes;
 use App\Models\Models;
 use App\Models\Parts;
 use App\Models\Vehicle;
-use App\Models\Descriptions;
+use App\Models\VehicleParts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -26,7 +26,8 @@ class SearchController extends Controller
 
         $name = $request->get('name');
 
-        $data = $parts::query()->join('description','part.id','=','description.id')
+        $data = $parts::query()
+            ->join('description','part.id','=','description.id')
             ->where('es','like',"%$name%")
             ->orWhere('en','like',"%$name%")
             ->orWhere('part','like',"%$name%")
@@ -104,6 +105,7 @@ class SearchController extends Controller
                 ->with('make','model')
                 ->orderBy('year', 'DESC')
                 ->get();
+
         }elseif(isset($select['year'])) {
             $year = $vehicle::query()
                 ->where('id','=',$select['year'])
@@ -127,7 +129,36 @@ class SearchController extends Controller
      */
     public function show($id)
     {
+        if(is_numeric($id)) {
+            $data = Vehicle::query()
+                ->where('id','=',$id)
+                ->with('make','model')
+                ->get()
+                ->first();
+            return view('product.show',compact('data'));
+        }
+    }
 
+    /**
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showPart($id) {
+        $data = Parts::query()
+            ->join('description','part.id','=','description.id')
+            ->where('part.id','=',$id)
+            ->get()
+            ->first();
+        return view('product.showPart',compact('data'));
+    }
+
+    public function showVehiclePart(VehicleParts $vehicleParts,$id) {
+        $vehicle = $vehicleParts::query()
+            ->where('vehicle_id','=',$id)
+            ->leftJoin('part','vehicle_part.part_id','=','part.id')
+            ->join('description','part.description_id','=','description.id')
+            ->get();
+        return response()->json($vehicle);
     }
 
 

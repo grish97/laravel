@@ -8,4 +8,7 @@ class Parts extends Model
 {
     protected $table = 'part';
 
+    public function description() {
+        return $this->hasOne(Descriptions::class,'id','description_id');
+    }
 }

@@ -17,4 +17,6 @@ Route::post('/getCar','SearchController@index');
 Route::post('/fill-select','SearchController@fillSelect');
 Route::post('/reset','SearchController@reset');
 Route::post('/showSelected','SearchController@showSelected');
-Route::post('/show/:id','SearchController@show');
+Route::get('show/{id}','SearchController@show');
+Route::get('show-part/{id}','SearchController@showPart');
+Route::get('showVPart/{id}','SearchController@showVehiclePart');
