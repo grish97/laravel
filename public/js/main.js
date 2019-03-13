@@ -26,30 +26,30 @@ class Request
                 request.generateView(data);
             },
             error : (data) =>  {
-                alert('This field is required')
+                alert('This field is required');
             },
         });
     }
 
     fillSelect (elemId,id) {
-        let data = null;
-
         let make = $(`#make`).val(),
             model = $(`#model`).val(),
             year = $(`#year`).val();
 
-        $.ajax({
-            url : '/fill-select',
-            method : 'post',
-            data : {
-              make : make,
-              model : model,
-              year  : year,
-            },
-            dataType : 'json',
-        }).done(function(data) {
-            request.generateSelect(data,elemId);
-        });
+        if(id) {
+            $.ajax({
+                url : '/fill-select',
+                method : 'post',
+                data : {
+                    make : make,
+                    model : model,
+                    year  : year,
+                },
+                dataType : 'json',
+            }).done(function(data) {
+                request.generateSelect(data,elemId);
+            });
+        }
     }
 
     generateSelect(data,elemId) {
@@ -57,19 +57,16 @@ class Request
             yearSelect = $(`#year`),
             modelSelect = $(`#model`);
 
-        // let make = this.make,
-        //     model = this.model,
-        //     year = this.year;
 
         if(elemId === 'make') {
             this.make = true;
 
-            if((!this.model && !this.year)) {
+            if((!this.model && !this.year || this.model && !this.year)) {
                 modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
                 yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
 
                 $.each(data.models,(key,value) => {
-                    let optionModel = `<option value="${value.model.id}">${value.model.name}</option>`;
+                    let optionModel = `<option value="${value.model_id}">${value.name}</option>`;
                     modelSelect.append(optionModel);
                 });
 
@@ -77,14 +74,7 @@ class Request
                     let  optionYear = `<option value="${value.id}">${value.year}</option>`;
                     yearSelect.append(optionYear);
                 });
-            }else if(this.model && !this.year) {
-                yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
-
-                $.each(data.years,(key,value) => {
-                    let  optionYear = `<option value="${value.id}">${value.year}</option>`;
-                    yearSelect.append(optionYear);
-                });
-            }else if(!this.model && this.year) {
+             }else if(!this.model && this.year) {
                 modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
 
                 $.each(data.models,(key,value) => {
@@ -116,10 +106,11 @@ class Request
                     let makeOption = `<option value="${value.make_id}">${value.name}</option>`;
                     makeSelect.append(makeOption);
                 });
-            }else if(this.make && !this.year) {
+            }else if(this.make && !this.year || (this.make && this.model)) {
                 yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
 
-                $.each(data.year, (key,value) => {
+                $.each(data.years, (key,value) => {
+                    console.log(value);
                     let yearOption = `<option value="${value.id}">${value.year}</option>`;
                     yearSelect.append(yearOption);
                 });
