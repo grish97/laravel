@@ -40,7 +40,7 @@
                             <select class="custom-select" id="year" name="year">
                                 <option value="">Year</option>
                                 @foreach($years as $key => $year)
-                                    <option value="{{$year->id}}">{{$year->year}}</option>
+                                    <option class="" value="{{$year->id}}">{{$year->year}}</option>
                                 @endforeach;
                             </select>
                         </div>

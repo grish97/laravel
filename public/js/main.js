@@ -44,6 +44,7 @@ class Request
                     make : make,
                     model : model,
                     year  : year,
+                    selected : elemId
                 },
                 dataType : 'json',
             }).done(function(data) {
@@ -57,96 +58,168 @@ class Request
             yearSelect = $(`#year`),
             modelSelect = $(`#model`);
 
-
         if(elemId === 'make') {
             this.make = true;
 
-            if((!this.model && !this.year || this.model && !this.year)) {
+            if(!this.model && !this.year) {
                 modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
                 yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
 
-                $.each(data.models,(key,value) => {
+                $.each(data.model, (key,value) => {
                     let optionModel = `<option value="${value.model_id}">${value.name}</option>`;
                     modelSelect.append(optionModel);
                 });
 
-                $.each(data.years,(key,value) => {
-                    let  optionYear = `<option value="${value.id}">${value.year}</option>`;
+                $.each(data.year, (key,value) => {
+                    let optionYear = `<option value="${value.id}">${value.year}</option>`;
                     yearSelect.append(optionYear);
                 });
-             }else if(!this.model && this.year) {
-                modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
-
-                $.each(data.models,(key,value) => {
-                    let optionModel = `<option value="${value.model.id}">${value.model.name}</option>`;
-                    modelSelect.append(optionModel);
-                });
             }
-        }
-        if(elemId === 'model') {
+
+        }else if(elemId === 'model') {
             this.model = true;
 
-            if(!this.make && !this.year) {
-                makeSelect.empty().prepend(`<option value="">Make</option>`).attr(`selected`,`selected`);
+            if(this.make && !this.year) {
                 yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
 
-                $.each(data.make,(key,value) => {
-                    let makeOption = `<option value="${value.make_id}">${value.name}</option>`;
-                    makeSelect.append(makeOption);
+                $.each(data.year, (key,value) => {
+                    let optionYear = `<option value="${value.id}">${value.year}</option>`;
+                    yearSelect.append(optionYear);
+                });
+            }else if(!this.make && !this.year) {
+                makeSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
+                yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
+
+                $.each(data.make, (key,value) => {
+                    let optionMake = `<option value="${value.make_id}">${value.name}</option>`;
+                    makeSelect.append(optionMake);
                 });
 
                 $.each(data.year, (key,value) => {
-                    let yearOption = `<option value="${value.id}">${value.year}</option>`;
-                    yearSelect.append(yearOption);
-                });
-            }else if(!this.make && this.year) {
-                makeSelect.empty().prepend(`<option value="">Make</option>`).attr(`selected`,`selected`);
-
-                $.each(data.make,(key,value) => {
-                    let makeOption = `<option value="${value.make_id}">${value.name}</option>`;
-                    makeSelect.append(makeOption);
-                });
-            }else if(this.make && !this.year || (this.make && this.model)) {
-                yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
-
-                $.each(data.years, (key,value) => {
-                    console.log(value);
-                    let yearOption = `<option value="${value.id}">${value.year}</option>`;
-                    yearSelect.append(yearOption);
+                    let optionYear = `<option value="${value.id}">${value.year}</option>`;
+                    yearSelect.append(optionYear);
                 });
             }
-        }
-        if(elemId === 'year') {
+
+        }else if(elemId === 'year') {
             this.year = true;
 
-            if(!this.make && !this.model) {
-                makeSelect.empty().prepend(`<option value="">Make</option>`).attr(`selected`,`selected`);
-                modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
-                $.each(data.make,(key,value) => {
-                    let makeOption = `<option value="${value.make.id}">${value.make.name}</option>`;
-                    makeSelect.append(makeOption);
-                });
-
-                $.each(data.model,(key,value) => {
-                    let  modelOption = `<option value="${value.model.id}">${value.model.name}</option>`;
-                    modelSelect.append(modelOption);
-                });
-            }else if(!this.make && this.model) {
-                makeSelect.empty().prepend(`<option value="">Make</option>`).attr(`selected`,`selected`);
-
-                $.each(data.make,(key,value) => {
-                    let makeOption = `<option value="${value.make.id}">${value.make.name}</option>`;
-                    makeSelect.append(makeOption);
-                });
-            }else if(this.make && !this.model) {
-                modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
-
-                $.each(data.model,(key,value) => {
-                    let  modelOption = `<option value="${value.model.id}">${value.model.name}</option>`;
-                    modelSelect.append(modelOption);
-                });
-            }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // if(elemId === 'make') {
+        //     this.make = true;
+        //
+        //     if((!this.model && !this.year || this.model && !this.year)) {
+        //         modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
+        //         yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
+        //
+        //         $.each(data.models,(key,value) => {
+        //             let optionModel = `<option value="${value.model_id}">${value.name}</option>`;
+        //             modelSelect.append(optionModel);
+        //         });
+        //
+        //         $.each(data.years,(key,value) => {
+        //             let  optionYear = `<option value="${value.id}">${value.year}</option>`;
+        //             yearSelect.append(optionYear);
+        //         });
+        //      }else if(!this.model && this.year) {
+        //         modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
+        //
+        //         $.each(data.models,(key,value) => {
+        //             let optionModel = `<option value="${value.model.id}">${value.model.name}</option>`;
+        //             modelSelect.append(optionModel);
+        //         });
+        //     }
+        // }
+        // if(elemId === 'model') {
+        //     this.model = true;
+        //
+        //     if(!this.make && !this.year) {
+        //         makeSelect.empty().prepend(`<option value="">Make</option>`).attr(`selected`,`selected`);
+        //         yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
+        //
+        //         $.each(data.make,(key,value) => {
+        //             let makeOption = `<option value="${value.make_id}">${value.name}</option>`;
+        //             makeSelect.append(makeOption);
+        //         });
+        //
+        //         $.each(data.year, (key,value) => {
+        //             let yearOption = `<option value="${value.id}">${value.year}</option>`;
+        //             yearSelect.append(yearOption);
+        //         });
+        //     }else if(!this.make && this.year) {
+        //         makeSelect.empty().prepend(`<option value="">Make</option>`).attr(`selected`,`selected`);
+        //
+        //         $.each(data.make,(key,value) => {
+        //             let makeOption = `<option value="${value.make_id}">${value.name}</option>`;
+        //             makeSelect.append(makeOption);
+        //         });
+        //     }else if(this.make && !this.year || (this.make && this.model)) {
+        //         yearSelect.empty().prepend(`<option value="">Year</option>`).attr(`selected`,`selected`);
+        //
+        //         $.each(data.years, (key,value) => {
+        //             console.log(value);
+        //             let yearOption = `<option value="${value.id}">${value.year}</option>`;
+        //             yearSelect.append(yearOption);
+        //         });
+        //     }
+        // }
+        // if(elemId === 'year') {
+        //     this.year = true;
+        //
+        //     if(!this.make && !this.model) {
+        //         makeSelect.empty().prepend(`<option value="">Make</option>`).attr(`selected`,`selected`);
+        //         modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
+        //         $.each(data.make,(key,value) => {
+        //             let makeOption = `<option value="${value.make.id}">${value.make.name}</option>`;
+        //             makeSelect.append(makeOption);
+        //         });
+        //
+        //         $.each(data.model,(key,value) => {
+        //             let  modelOption = `<option value="${value.model.id}">${value.model.name}</option>`;
+        //             modelSelect.append(modelOption);
+        //         });
+        //     }else if(!this.make && this.model) {
+        //         makeSelect.empty().prepend(`<option value="">Make</option>`).attr(`selected`,`selected`);
+        //
+        //         $.each(data.make,(key,value) => {
+        //             let makeOption = `<option value="${value.make.id}">${value.make.name}</option>`;
+        //             makeSelect.append(makeOption);
+        //         });
+        //     }else if(this.make && !this.model) {
+        //         modelSelect.empty().prepend(`<option value="">Model</option>`).attr(`selected`,`selected`);
+        //
+        //         $.each(data.model,(key,value) => {
+        //             let  modelOption = `<option value="${value.model.id}">${value.model.name}</option>`;
+        //             modelSelect.append(modelOption);
+        //         });
+        //     }
+        // }
     }
 
     generateView(data) {

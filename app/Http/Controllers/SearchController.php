@@ -8,7 +8,6 @@ use App\Models\Parts;
 use App\Models\Vehicle;
 use App\Models\VehicleParts;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
 class SearchController extends Controller
@@ -36,44 +35,60 @@ class SearchController extends Controller
         else return response()->json([]);
     }
 
-    public function fillSelect(Request $request,Makes $make,Models $model,Vehicle $vehicle) {
+    public function fillSelect(Request $request,Vehicle $vehicle) {
         $requestData = null;
         $makeId = $request->make;
         $modelId = $request->model;
         $yearId =  $request->year;
+        $selected = $request->selected;
 
-        $year = $vehicle::query()
-            ->select('year')
-            ->where('id','=',$yearId)
-            ->get()->first();
+        $data = $this->getSelectValue($makeId,$modelId,$yearId);
 
-        $data = $vehicle::query()
+        return response()->json($data);
+    }
+
+    public function getSelectValue($makeId = '',$modelId = '',$yearId = '')    {
+        $table = Vehicle::query()
             ->leftJoin('make','vehicle.make_id','=','make.id')
             ->leftJoin('model','vehicle.model_id','=','model.id');
 
-        if($makeId && !$modelId && !$yearId || ($makeId && $modelId && !$yearId)) {
-            $models = $data
-                ->select('model_id','model.name')
-                ->where('make_id','=',$makeId)
-                ->groupBy('model_id')
-                ->get();
-            $years = $data
-                ->select('vehicle.id','year')
-                ->get();
-            $requestData = ['models' => $models, 'years' => $years];
+        $year = Vehicle::query()
+            ->select('year')
+            ->where('vehicle.id','=',$yearId)
+            ->first();
+        $year = $year->year ?? null;
+
+        $make = $table
+            ->select('make.id','make.name')
+            ->where('model_id','=',$modelId)
+            ->orWhere('vehicle.year','=',$year)
+            ->distinct()
+            ->get();
+
+        $model = $table
+            ->select('vehicle.model_id','model.name')
+            ->where('vehicle.year','=',$year)
+            ->orWhere('make.id','=',$makeId)
+            ->distinct()
+            ->get();
+
+        $years  = $table
+            ->select('vehicle.id','year')
+            ->where('model.id','=',$modelId)
+            ->where('make.id','=',$makeId)
+            ->orderBy('year','desc')
+            ->get()
+            ->unique('year');
+
+        if($makeId && !$modelId && !$yearId) {
+            return ['model' => $model,'year' => $years];
+        }elseif(!$makeId && $modelId && !$yearId) {
+            return ['make' => $make,'year' => $years];
+        }elseif(!$makeId && !$modelId && $yearId) {
+            return ['make' => $make,'model' => $model];
         }elseif($makeId && $modelId && !$yearId) {
-            $years = $data
-                ->select('vehicle.id','year')
-                ->where('make_id','=',$makeId)
-                ->orWhere('model_id','=',$modelId)
-                ->groupBy('year')
-                ->orderBy('year','asc')
-                ->get();
-            $requestData = ['years' => $years];
+            return ['year' => $years];
         }
-
-        return response()->json($requestData);
-
     }
 
     public function reset(Makes $make, Models $model,Vehicle $vehicle) {
