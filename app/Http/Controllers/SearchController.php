@@ -35,8 +35,7 @@ class SearchController extends Controller
         else return response()->json([]);
     }
 
-    public function fillSelect(Request $request,Vehicle $vehicle) {
-        $requestData = null;
+    public function fillSelect(Request $request) {
         $makeId = $request->make;
         $modelId = $request->model;
         $yearId =  $request->year;
@@ -55,37 +54,37 @@ class SearchController extends Controller
             ->select('year')
             ->where('vehicle.id','=',$yearId)
             ->first();
+
         $year = $year->year ?? null;
 
         $make = $table
-            ->select('make.id','make.name');
+            ->where(function($query) use($modelId,$year) {
+                $query->where('model_id','=',$modelId)
+                    ->where('year','=',$year);
+            })
+            ->orWhere('make_id','=',$makeId)
+            ->orWhere('year','=',$year)
+            ->groupBy('make_id')
+            ->get();
 
         $model = $table
-            ->select('vehicle.model_id','model.name');
+            ->select('model_id','model.name')
+            ->where(function($query) use($makeId,$year) {
+                $query->where('make_id','=',$makeId)
+                    ->where('year','=',$year);
+            })
+            ->orWhere('make_id','=',$makeId)
+            ->orWhere('year','=',$year)
+            ->groupBy('model_id')
+            ->get();
 
-        $years  = $table
-            ->select('vehicle.id','year');
+        $years = $table
+            ->select('vehicle.id','year')
+            ->orderBy('year','desc')
+            ->get()
+            ->unique('year');
 
-        if($makeId && !$modelId && !$yearId) {
-            $model = $model
-                ->where('make_id','=',$makeId)
-                ->get();
-
-            $years = $years
-                ->distinct()
-                ->get();
-            return ['model' => $model,'year' => $years];
-        }elseif($makeId && $modelId && !$yearId) {
-            $years = $years
-                ->where('make_id','=',$makeId)
-                ->where('model_id','=',$modelId)
-                ->distinct()
-                ->get();
-            return ['year' => $years];
-        }
-
-
-        return [$make,$model,$years];
+        return ['make' => $make,'model' => $model,'year' => $years];
     }
 
     public function reset(Makes $make, Models $model,Vehicle $vehicle) {
