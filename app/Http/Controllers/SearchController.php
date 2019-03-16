@@ -39,13 +39,18 @@ class SearchController extends Controller
         $makeId = $request->make;
         $modelId = $request->model;
         $yearId =  $request->year;
+        $selected = $request->selected;
 
-        $data = $this->getSelectValue($makeId,$modelId,$yearId);
+        $data = $this->getSelectValue($makeId,$modelId,$yearId,$selected);
 
         return response()->json($data);
     }
 
-    public function getSelectValue($makeId = null,$modelId = null,$yearId = null)    {
+    public function getSelectValue($makeId = null,$modelId = null,$yearId = null,$selected)    {
+        $make = [];
+        $model = [];
+        $years = [];
+
         $table = Vehicle::query()
             ->leftJoin('make','vehicle.make_id','=','make.id')
             ->leftJoin('model','vehicle.model_id','=','model.id');
@@ -57,34 +62,101 @@ class SearchController extends Controller
 
         $year = $year->year ?? null;
 
-        $make = $table
-            ->where(function($query) use($modelId,$year) {
-                $query->where('model_id','=',$modelId)
-                    ->where('year','=',$year);
-            })
-            ->orWhere('make_id','=',$makeId)
-            ->orWhere('year','=',$year)
-            ->groupBy('make_id')
-            ->get();
+        if($makeId) {
+            if($modelId) {
+                $year = $table
+                    ->select('vehicle.id','vehicle.year')
+                    ->where('make_id','=',$makeId)
+                    ->where('model_id','=',$modelId)
+                    ->orderBy('year')
+                    ->get()
+                    ->unique('year');
+                return $year;
+            }elseif($yearId) {
+                $model = $table
+                    ->select('model_id','model.name')
+                    ->where('make_id','=',$makeId)
+                    ->where('year','=',$year)
+                    ->get();
+                return $model;
+            }
 
-        $model = $table
-            ->select('model_id','model.name')
-            ->where(function($query) use($makeId,$year) {
-                $query->where('make_id','=',$makeId)
-                    ->where('year','=',$year);
-            })
-            ->orWhere('make_id','=',$makeId)
-            ->orWhere('year','=',$year)
-            ->groupBy('model_id')
-            ->get();
+            $model = $table
+                ->select('model_id','model.name')
+                ->where('make_id','=',$makeId)
+                ->orWhere('year','=',$year)
+                ->groupBy('model_id')
+                ->get();
 
-        $years = $table
-            ->select('vehicle.id','year')
-            ->orderBy('year','desc')
-            ->get()
-            ->unique('year');
+            $years = $table
+                ->select('vehicle.id','vehicle.year')
+                ->orderBy('year','desc')
+                ->get()
+                ->unique('year');
 
-        return ['make' => $make,'model' => $model,'year' => $years];
+        }elseif($modelId) {
+            if($makeId && $selected === 'make') {
+                $years = $table
+                    ->select('vehicle.id','vehicle.year')
+                    ->where('make_id','=',$modelId)
+                    ->where('model_id','=',$makeId)
+                    ->orderBy('year','desc')
+                    ->get()
+                    ->unique('year');
+                return $years;
+            }elseif($yearId && $selected === 'year') {
+                $make = $table
+                    ->select('make_id','make.name')
+                    ->where('model_id','=',$modelId)
+                    ->where('year','=',$year)
+                    ->groupBy('make_id')
+                    ->get();
+                return $make;
+            }
+            $make = $table
+                ->select('make_id','make.name')
+                ->where('model_id','=',$modelId)
+                ->orWhere('year','=',$year)
+                ->groupBy('make_id')
+                ->get();
+
+            $years = $table
+                ->select('vehicle.id','vehicle.year')
+                ->orderBy('year','desc')
+                ->get()
+                ->unique('year');
+        }elseif($yearId) {
+            if($modelId) {
+                $make = $table
+                    ->select('make_id','make.name')
+                    ->where('year','=',$year)
+                    ->where('model_id','=',$modelId)
+                    ->groupBy();
+                return $make;
+            }elseif($makeId) {
+                $years = $table
+                    ->select('vehicle.id','vehicle.year')
+                    ->where('year','=',$year)
+                    ->where('make_id','=',$makeId)
+                    ->orderBy('year','desc')
+                    ->get()
+                    ->unique('year');
+                return $years;
+            }
+
+            $model = $table
+                ->select('model_id','model.name')
+                ->where('year','=',$year)
+                ->groupBy('model_id')
+                ->get();
+
+            $make = $table
+                ->select('make_id','make.name')
+                ->distinct()
+                ->get();
+        }
+
+        return ['make' => $make, 'model' => $model,'year' => $years];
     }
 
     public function reset(Makes $make, Models $model,Vehicle $vehicle) {
