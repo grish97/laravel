@@ -67,31 +67,81 @@ class SearchController extends Controller
             $column1 = reset($dataName);
             $column2 = end($dataName);
 
+            $selectColumn1 = [$column1.'_id',$column1.'.name'];
+            $selectColumn2 = [$column2.'_id',$column2.'.name'];
+
+            $where = [
+                        [$firstSelect.'_id',$data[$firstSelect]]
+                     ];
+            $groupBy = $column1.'_id';
+            $orderBy = $column2.'.name';
+            $unique = $column1.'.name';
+
+            if($firstSelect == 'year') {
+                $where = [
+                    [$firstSelect,$data[$firstSelect]]
+                ];
+            }
+
             $$column1 = $table
-                ->select($column1.'_id',$column1.'.name')
-                ->where(($firstSelect == 'year' ? 'year' : $firstSelect.'_id'),'=',$data[$firstSelect])
-                ->distinct()
+                ->select($selectColumn1)
+                ->where($where)
+                ->groupBy($groupBy)
                 ->get();
 
+            if($column2 == 'year') {
+                $selectColumn2 = ['vehicle.id','vehicle.year'];
+                $orderBy = 'year';
+                $unique = 'year';
+            }
+
             $$column2 = $table
-                ->select()
-                ->get();
+                ->select($selectColumn2)
+                ->orderBy($orderBy,'desc')
+                ->get()
+                ->unique($unique);
 
             return ["$column1" => $$column1,"$column2" => $$column2];
         }elseif($count === 2) {
-            $dataName = array_diff($dataName,[$firstSelect,$lastSelect]);
+            $dataName = array_diff($dataName,$selected);
             $column = reset($dataName);
 
+            $select = [$column.'_id',$column.'.name'];
+
+            $where = [
+                [$firstSelect.'_id',$data[$firstSelect]],
+                [$lastSelect.'_id',$data[$lastSelect]]
+                ];
+
+            $orderBy = $column.'.name';
+            $groupBy = $column.'_id';
+
+
+            if(in_array('year',$selected)) {
+               if($firstSelect == 'year') $where = [
+                                            [$firstSelect,$data[$firstSelect]],
+                                            [$lastSelect.'_id',$data[$lastSelect]]
+                                       ];
+               else $where = [
+                       [$firstSelect.'_id',$data[$firstSelect]],
+                       [$lastSelect,$data[$lastSelect]]
+                    ];
+
+            }else {
+                $select = ['vehicle.id','vehicle.year'];
+                $orderBy = $column;
+                $groupBy = $column;
+            }
+
             $$column = $table
-                ->where($firstSelect.'_id','=',$data[$firstSelect])
-                ->where($lastSelect.'_id','=',$data[$lastSelect])
-                ->get()
-                ->unique('year');
+                ->select($select)
+                ->where($where)
+                ->orderBy($orderBy,'desc')
+                ->groupBy($groupBy)
+                ->get();
 
             return ["$column" => $$column];
         }
-
-
     }
 
     public function reset(Makes $make, Models $model,Vehicle $vehicle) {

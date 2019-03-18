@@ -50,7 +50,6 @@ class Request
                 },
                 dataType : 'json',
             }).done(function(data) {
-                console.log(data);return;
                 request.generateSelect(data,elemId);
             });
         }
@@ -59,7 +58,16 @@ class Request
     generateSelect(data,elemId) {
         let makeSelect = $(`#make`),
             yearSelect = $(`#year`),
-            modelSelect = $(`#model`);
+            modelSelect = $(`#model`),
+            selectName = ['make','model','year'],
+            selected = this.selected,
+            count = selected.length;
+
+        if(count === 1 || selected[0] === elemId) {
+
+        }else if(count === 2) {
+           console.log(2);
+        }
     }
 
     generateView(data) {
