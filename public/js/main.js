@@ -46,7 +46,7 @@ class Request
                     make : make,
                     model : model,
                     year  :year === 'Year' ? '' : year,
-                    selected : [this.selected[0],elemId],
+                    selected : [this.selected[0],elemId,this.selected[this.selected.length-1]],
                 },
                 dataType : 'json',
             }).done(function(data) {
@@ -58,7 +58,7 @@ class Request
     generateSelect(data,elemId) {
         let selected = this.selected,
             first = selected[0],
-            last = selected[selected.length - 1],
+            last  = selected[selected.length - 1],
             count = selected.length;
 
         if(count === 1 || first === elemId) {
@@ -79,9 +79,8 @@ class Request
             });
 
         }else if(count === 2 || (first !== elemId && last !== elemId)) {
-             let unique = this.unique(first,last),
+             let unique = this.unique(first,elemId),
                  select = unique[0];
-
              this.emptySelect(select);
 
              $.each(data[select], (key,val) => {
@@ -111,24 +110,11 @@ class Request
     }
 
     showSelected() {
-        let make = this.make,
-            model = this.model,
-            year = this.year,
-            formData = null;
+        let makeVal = $(`#make`).val(),
+            modelVal = $(`#model`).val(),
+            yearVal = $(`#year`).val();
 
-        let makeSelect = $(`#make`),
-            modelSelect = $(`#model`),
-            yearSelect = $(`#year`);
-
-        if(make && !model && !year) {
-            formData = {make : makeSelect.val()};
-        }else if((make && model && !year) || (!make && model && !year) || (!make && model && year)) {
-            formData = {model : modelSelect.val()};
-        }else if(!make && !model && year) {
-            formData = {year : yearSelect.val()};
-        }
-
-        if(formData !== null) {
+        if(selectData !== null) {
             $.ajax({
                 url : `/showSelected`,
                 type : `post`,

@@ -47,13 +47,15 @@ class SearchController extends Controller
     }
 
     public function getSelectValue($makeId = null,$modelId = null,$yearId = null,$selected)    {
-        list($firstSelect,$lastSelect) = $selected;
+        list($firstSelect,$lastSelect,$lastElem) = $selected;
 
         $dataName = ['make','model','year'];
 
         $data  = array_filter(['make' => $makeId, 'model' => $modelId,'year' =>  $yearId],function($elem) {
             return $elem != null;
         });
+
+        $a = array_diff($selected,$data);
 
         $count = count($data);
 
@@ -90,10 +92,10 @@ class SearchController extends Controller
                 $$column2  = $$column2->unique($column2.'_id');
             }
 
-            return ["$column1" => $$column1,"$column2" => $$column2];
+            return compact("$column1","$column2");
 
-        }elseif($count === 2) {
-            $dataName = array_diff($dataName,$selected);
+        }elseif($count === 2 || ($firstSelect != $lastSelect &&  $lastElem != $lastSelect)) {
+            $dataName = array_diff($dataName,[$firstSelect,$lastSelect]);
             $column = reset($dataName);
 
             $select = [$column.'_id',$column.'.name'];
@@ -107,7 +109,7 @@ class SearchController extends Controller
             $groupBy = $column.'_id';
 
 
-            if(in_array('year',$selected)) {
+            if(in_array('year',[$firstSelect,$lastSelect])) {
                if($firstSelect == 'year') $where = [
                                             [$firstSelect,$data[$firstSelect]],
                                             [$lastSelect.'_id',$data[$lastSelect]]
@@ -130,7 +132,7 @@ class SearchController extends Controller
                 ->groupBy($groupBy)
                 ->get();
 
-            return ["$column" => $$column];
+            return compact("$column");
         }
     }
 
