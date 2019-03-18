@@ -46,7 +46,7 @@ class Request
                     make : make,
                     model : model,
                     year  :year === 'Year' ? '' : year,
-                    selected : [this.selected[0],this.selected[this.selected.length - 1]],
+                    selected : [this.selected[0],elemId],
                 },
                 dataType : 'json',
             }).done(function(data) {
@@ -56,17 +56,38 @@ class Request
     }
 
     generateSelect(data,elemId) {
-        let makeSelect = $(`#make`),
-            yearSelect = $(`#year`),
-            modelSelect = $(`#model`),
-            selectName = ['make','model','year'],
-            selected = this.selected,
+        let selected = this.selected,
+            first = selected[0],
+            last = selected[selected.length - 1],
             count = selected.length;
 
-        if(count === 1 || selected[0] === elemId) {
+        if(count === 1 || first === elemId) {
+           let unique = this.unique(first),
+               selectOne = unique[0],
+               selectTwo = unique[1];
 
-        }else if(count === 2) {
-           console.log(2);
+           this.emptySelect(selectOne,selectTwo);
+
+           $.each(data[selectOne],(key,val) => {
+              let selectBlock = `<option value="${val[selectOne + '_id']}">${val.name}</option>`;
+              $(`#${selectOne}`).append(selectBlock);
+           });
+
+            $.each(data[selectTwo],(key,val) => {
+                let selectBlock = `<option value="${(selectTwo === 'year') ? val.id : val[selectTwo+'_id']}">${val.name ? val.name :  val.year}</option>`;
+                $(`#${selectTwo}`).append(selectBlock);
+            });
+
+        }else if(count === 2 || (first !== elemId && last !== elemId)) {
+             let unique = this.unique(first,last),
+                 select = unique[0];
+
+             this.emptySelect(select);
+
+             $.each(data[select], (key,val) => {
+                 let selectBlock = `<option value="${(select === 'year') ? val.id : val[select+'_id']}">${val.name ? val.name :  val.year}</option>`;
+                 $(`#${select}`).append(selectBlock);
+             });
         }
     }
 
@@ -195,6 +216,30 @@ class Request
             });
         });
     }
+
+    unique(firstSelect,lastSelect = '') {
+        let selectNames = ['make','model','year'],
+            finalArray = [];
+
+        if(firstSelect && !lastSelect) finalArray = selectNames.filter((el) => (el !== firstSelect));
+        else if(firstSelect && lastSelect) finalArray = selectNames.filter((el) => (el !== firstSelect && el !== lastSelect));
+
+        return finalArray;
+    }
+
+    emptySelect(select1,select2 = '') {
+        let _select1 = select1.charAt(0).toUpperCase() + select1.slice(1);
+        let defaultVal = `<option value="">${_select1}</option>`;
+        $(`#${select1}`).empty().append(defaultVal);
+
+        if(select2) {
+            let _select2 = select2.charAt(0).toUpperCase() + select2.slice(1);
+            defaultVal = `<option value="">${_select2}</option>`;
+            $(`#${select2}`).empty().append(defaultVal);
+        }
+
+        return true;
+    }
 }
 
 let request = new Request();
@@ -215,9 +260,12 @@ $(document).on(`submit`,`.formMake`,(e) => {
 $(document).on('change','select',(e) => {
     let elem = $(e.target),
         elemId = elem.attr(`id`),
-        id = elem.val();
+        id = elem.val(),
+        selectArr = request.selected;
 
-    request.selected.push(elemId);
+        if(selectArr.length === 0 || $.inArray(elemId,selectArr) === -1) {
+            selectArr.push(elemId);
+        }
     request.fillSelect(elemId,id);
 });
 

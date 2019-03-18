@@ -57,7 +57,6 @@ class SearchController extends Controller
 
         $count = count($data);
 
-
         $table = Vehicle::query()
             ->leftJoin('make','vehicle.make_id','=','make.id')
             ->leftJoin('model','vehicle.model_id','=','model.id');
@@ -68,40 +67,31 @@ class SearchController extends Controller
             $column2 = end($dataName);
 
             $selectColumn1 = [$column1.'_id',$column1.'.name'];
-            $selectColumn2 = [$column2.'_id',$column2.'.name'];
+            $selectColumn2 = ($column2 == 'year') ? ['vehicle.id','vehicle.'.$column2] : [$column2.'_id',$column2.'.name'];
 
-            $where = [
-                        [$firstSelect.'_id',$data[$firstSelect]]
-                     ];
-            $groupBy = $column1.'_id';
-            $orderBy = $column2.'.name';
-            $unique = $column1.'.name';
+            $where = ($firstSelect == 'year')  ?  [[$firstSelect,$data[$firstSelect]]]
+                                               :  [[$firstSelect.'_id',$data[$firstSelect]]];
 
-            if($firstSelect == 'year') {
-                $where = [
-                    [$firstSelect,$data[$firstSelect]]
-                ];
-            }
 
             $$column1 = $table
                 ->select($selectColumn1)
                 ->where($where)
-                ->groupBy($groupBy)
                 ->get();
-
-            if($column2 == 'year') {
-                $selectColumn2 = ['vehicle.id','vehicle.year'];
-                $orderBy = 'year';
-                $unique = 'year';
-            }
 
             $$column2 = $table
                 ->select($selectColumn2)
-                ->orderBy($orderBy,'desc')
-                ->get()
-                ->unique($unique);
+                ->get();
+
+            if($firstSelect != 'year') {
+                $$column1 = $$column1->unique($column1.'_id');
+                $$column2 = $$column2->unique($column2);
+            }else {
+                $$column1  = $$column1->unique($column1.'_id');
+                $$column2  = $$column2->unique($column2.'_id');
+            }
 
             return ["$column1" => $$column1,"$column2" => $$column2];
+
         }elseif($count === 2) {
             $dataName = array_diff($dataName,$selected);
             $column = reset($dataName);
