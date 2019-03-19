@@ -45,7 +45,7 @@
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-info ml-3">Search</button>
+                    <button type="submit" class="btn btn-success ml-3">Search</button>
                 </form>
                 <button type="submit" class="btn btn-danger reset ml-2">Reset</button>
             </div>
@@ -68,6 +68,12 @@
                 </thead>
                 <tbody></tbody>
             </table>
+        </div>
+
+        <div class="paginateBlock d-none">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination"></ul>
+            </nav>
         </div>
 
     </div>

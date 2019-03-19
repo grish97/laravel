@@ -35,8 +35,8 @@ class Request
     fillSelect (elemId,id) {
         let make = $(`#make`).val(),
             model = $(`#model`).val(),
-            year = $(`#year`).val();
-        year = $(`#year option[value='${year}']`).text();
+            year = $(`#year`);
+        year = year.find(`option[value='${year.val()}']`).text();
 
         if(id) {
             $.ajax({
@@ -112,33 +112,58 @@ class Request
     showSelected() {
         let makeVal = $(`#make`).val(),
             modelVal = $(`#model`).val(),
-            yearVal = $(`#year`).val();
+            year = $(`#year`),
+            yearVal =  year.find(`option[value='${year.val()}']`).text();
+            yearVal = (yearVal === 'Year') ? '' : yearVal;
 
-        if(selectData !== null) {
-            $.ajax({
-                url : `/showSelected`,
-                type : `post`,
-                dataType : `json`,
-                data : {formData : formData},
-            }).done(function(data) {
-                let showSelected = $(`.showSelected`);
-                showSelected.removeClass(`d-none`);
+        if(!makeVal && !modelVal && !yearVal) {
+            alert('Empty');
+            return false;
+        }
 
-                if($.isArray(data)) {
-                    $.each(data, (key,value) => {
-                        let block = `<tr>
-                                          <th scope="row">${key+1}</th>
-                                          <td>${value.make.name}</td>
-                                          <td>${value.model.name}</td>
-                                          <td>${value.year}</td>
-                                          <td><a href="show/${value.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>
-                                      </tr>`;
-                        $(`.showSelected tbody`).append(block);
-                    })
-                }
+        let selected = {
+            make : makeVal,
+            model : modelVal,
+            year  : yearVal
+        };
 
-            });
-        }else console.log(`Empty`);
+        $.ajax({
+            url : '/showSelected',
+            method : 'post',
+            dataType : 'json',
+            data : {selected : selected},
+        }).done((data) => {
+            this.generateTable(data);
+        });
+    }
+
+    generateTable(data) {
+        let table = $(`.showSelected`),
+            paginateBlock = $(`.paginateBlock`);
+        table.removeClass(`d-none`);
+        paginateBlock.removeClass(`d-none`);
+
+        $.each(data,(key,val) => {
+            let row = `<tr>
+                                <td>${key}</td>         
+                                <td>${val.make[0].name}</td>         
+                                <td>${val.model[0].name}</td>         
+                                <td>${val.year}</td>         
+                                <td><a href="/show/${val.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>         
+                           </tr>`;
+
+            table.find(`tbody`).append(row);
+        });
+    }
+
+    nextPage (url) {
+        $.ajax({
+            url : url,
+            method : 'post',
+            dataType : 'json',
+        }).done((data) => {
+            console.log(data)
+        });
     }
 
     showParts(url) {
@@ -265,6 +290,7 @@ $(document).on(`submit`,`#selectForm`,(e) => {
     $(`.card-columns`).empty();
     request.showSelected();
 });
+
 $(document).on(`click`,`.showParts`,(e) => {
     e.preventDefault();
     let elem = $(e.target),
@@ -272,4 +298,11 @@ $(document).on(`click`,`.showParts`,(e) => {
     elem.attr(`disabled`,`disabled`);
     $(`.card-columns`).empty();
     request.showParts(url);
+});
+
+$(document).on('click',`.page-link`,(e) => {
+    e.preventDefault();
+    let elem = $(e.target),
+        url = elem.attr('href');
+    request.nextPage(url);
 });

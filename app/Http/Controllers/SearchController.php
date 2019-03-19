@@ -47,7 +47,7 @@ class SearchController extends Controller
     }
 
     public function getSelectValue($makeId = null,$modelId = null,$yearId = null,$selected)    {
-        list($firstSelect,$lastSelect,$lastElem) = $selected;
+        list($firstSelect,$currentSelect,$lastSelect) = $selected;
 
         $dataName = ['make','model','year'];
 
@@ -55,15 +55,13 @@ class SearchController extends Controller
             return $elem != null;
         });
 
-        $a = array_diff($selected,$data);
-
         $count = count($data);
 
         $table = Vehicle::query()
             ->leftJoin('make','vehicle.make_id','=','make.id')
             ->leftJoin('model','vehicle.model_id','=','model.id');
 
-        if($count === 1 || $firstSelect === $lastSelect) {
+        if($count === 1 || $firstSelect === $currentSelect) {
             $dataName = array_diff($dataName,[$firstSelect]);
             $column1 = reset($dataName);
             $column2 = end($dataName);
@@ -71,9 +69,7 @@ class SearchController extends Controller
             $selectColumn1 = [$column1.'_id',$column1.'.name'];
             $selectColumn2 = ($column2 == 'year') ? ['vehicle.id','vehicle.'.$column2] : [$column2.'_id',$column2.'.name'];
 
-            $where = ($firstSelect == 'year')  ?  [[$firstSelect,$data[$firstSelect]]]
-                                               :  [[$firstSelect.'_id',$data[$firstSelect]]];
-
+            $where = ($firstSelect == 'year')  ?  [[$firstSelect,$data[$firstSelect]]]  :  [[$firstSelect.'_id',$data[$firstSelect]]];
 
             $$column1 = $table
                 ->select($selectColumn1)
@@ -94,29 +90,29 @@ class SearchController extends Controller
 
             return compact("$column1","$column2");
 
-        }elseif($count === 2 || ($firstSelect != $lastSelect &&  $lastElem != $lastSelect)) {
-            $dataName = array_diff($dataName,[$firstSelect,$lastSelect]);
+        }elseif($count === 2 || ($firstSelect != $currentSelect &&  $lastSelect != $currentSelect)) {
+            $dataName = array_diff($dataName,[$firstSelect,$currentSelect]);
             $column = reset($dataName);
 
             $select = [$column.'_id',$column.'.name'];
 
             $where = [
                 [$firstSelect.'_id',$data[$firstSelect]],
-                [$lastSelect.'_id',$data[$lastSelect]]
+                [$currentSelect.'_id',$data[$currentSelect]]
                 ];
 
             $orderBy = $column.'.name';
             $groupBy = $column.'_id';
 
 
-            if(in_array('year',[$firstSelect,$lastSelect])) {
+            if(in_array('year',[$firstSelect,$currentSelect])) {
                if($firstSelect == 'year') $where = [
                                             [$firstSelect,$data[$firstSelect]],
-                                            [$lastSelect.'_id',$data[$lastSelect]]
+                                            [$currentSelect.'_id',$data[$currentSelect]]
                                        ];
                else $where = [
                        [$firstSelect.'_id',$data[$firstSelect]],
-                       [$lastSelect,$data[$lastSelect]]
+                       [$currentSelect,$data[$currentSelect]]
                     ];
 
             }else {
@@ -144,35 +140,60 @@ class SearchController extends Controller
     }
 
     public function showSelected(Request $request,Vehicle $vehicle) {
-        $select = $request->input('formData');
+            $selected = array_filter($request->selected,function($elem) {
+                return $elem != null;
+            });
 
-        if(isset($select['make'])) {
-            $data = $vehicle::query()
-                ->where('make_id','=',$select['make'])
-                ->with('make','model')
-                ->groupBy('model_id')
-                ->orderBy('year', 'DESC')
-                ->get();
-        }elseif(isset($select['model'])) {
-            $data = $vehicle::query()
-                ->where('model_id','=',$select['model'])
-                ->with('make','model')
-                ->orderBy('year', 'DESC')
-                ->get();
+            $selectKey = array_keys($selected);
+            $selectedCount = count($selected);
 
-        }elseif(isset($select['year'])) {
-            $year = $vehicle::query()
-                ->where('id','=',$select['year'])
-                ->get()
-                ->first();
-            $data = $vehicle::query()
-                ->where('year','=',$year['year'])
-                ->with('make','model')
-                ->groupBy('model_id')
-                ->orderBy('year', 'DESC')
-                ->get();
-        }
-        return response()->json($data);
+            $where = [];
+
+            if($selectedCount === 1) {
+                list($select) = $selectKey;
+                $column = ($select == 'year') ? $select : $select.'_id';
+                $value  = $selected[$select];
+
+                $where = [
+                    [$column,$value]
+                ];
+
+            }elseif($selectedCount === 2) {
+                list($selectOne,$selectTwo) = $selectKey;
+                $columnOne = ($selectOne === 'year') ? $selectOne : $selectOne.'_id';
+                $columnTwo = ($selectTwo === 'year') ? $selectTwo : $selectTwo.'_id';
+
+                $valueOne  = $selected[$selectOne];
+                $valueTwo  = $selected[$selectTwo];
+
+                $where = [
+                    [$columnOne,$valueOne],
+                    [$columnTwo,$valueTwo]
+                ];
+
+            }else {
+                list($selectOne,$selectTwo,$selectThree) = $selectKey;
+                $columnOne = ($selectOne === 'year') ? $selectOne : $selectOne.'_id';
+                $columnTwo = ($selectTwo === 'year') ? $selectTwo : $selectTwo.'_id';
+                $columnThree = ($selectThree === 'year') ? $selectThree : $selectThree.'_id';
+
+                $valueOne  = $selected[$selectOne];
+                $valueTwo  = $selected[$selectTwo];
+                $valueThree  = $selected[$selectThree];
+
+                $where = [
+                    [$columnOne,$valueOne],
+                    [$columnTwo,$valueTwo],
+                    [$columnThree,$valueThree],
+                ];
+            }
+
+        $data = $vehicle::query()
+            ->where($where)
+            ->with('make','model')
+            ->get();
+
+        return $data;
     }
 
     /**
@@ -201,6 +222,10 @@ class SearchController extends Controller
             ->get()
             ->first();
         return view('product.showPart',compact('data'));
+    }
+
+    public function showPartVehicle($id) {
+        var_dump($id);
     }
 
     public function showVehiclePart(VehicleParts $vehicleParts,$id) {
