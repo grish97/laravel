@@ -63,46 +63,46 @@ class SearchController extends Controller
 
         if($count === 1 || $firstSelect === $currentSelect) {
             $dataName = array_diff($dataName,[$firstSelect]);
-            $column1 = reset($dataName);
-            $column2 = end($dataName);
+            $columnName1 = reset($dataName);
+            $columnName2 = end($dataName);
 
-            $selectColumn1 = [$column1.'_id',$column1.'.name'];
-            $selectColumn2 = ($column2 == 'year') ? ['vehicle.id','vehicle.'.$column2] : [$column2.'_id',$column2.'.name'];
+            $selectColumn1 = [$columnName1.'_id',$columnName1.'.name'];
+            $selectColumn2 = ($columnName2 == 'year') ? ['vehicle.id','vehicle.'.$columnName2] : [$columnName2.'_id',$columnName2.'.name'];
 
             $where = ($firstSelect == 'year')  ?  [[$firstSelect,$data[$firstSelect]]]  :  [[$firstSelect.'_id',$data[$firstSelect]]];
 
-            $$column1 = $table
+            $selectData1 = $table
                 ->select($selectColumn1)
                 ->where($where)
                 ->get();
 
-            $$column2 = $table
+            $selectData2 = $table
                 ->select($selectColumn2)
                 ->get();
 
             if($firstSelect != 'year') {
-                $$column1 = $$column1->unique($column1.'_id');
-                $$column2 = $$column2->unique($column2);
+                $selectData1 = $selectData1->unique($columnName1.'_id');
+                $selectData2 = $selectData2->unique($columnName2);
             }else {
-                $$column1  = $$column1->unique($column1.'_id');
-                $$column2  = $$column2->unique($column2.'_id');
+                $selectData1  = $selectData1->unique($columnName1.'_id');
+                $selectData2  = $selectData2->unique($columnName2.'_id');
             }
 
-            return compact("$column1","$column2");
+            return ["$columnName1" => $selectData1,"$columnName2" => $selectData2];
 
         }elseif($count === 2 || ($firstSelect != $currentSelect &&  $lastSelect != $currentSelect)) {
             $dataName = array_diff($dataName,[$firstSelect,$currentSelect]);
-            $column = reset($dataName);
+            $columnName = reset($dataName);
 
-            $select = [$column.'_id',$column.'.name'];
+            $select = [$columnName.'_id',$columnName.'.name'];
 
             $where = [
                 [$firstSelect.'_id',$data[$firstSelect]],
                 [$currentSelect.'_id',$data[$currentSelect]]
                 ];
 
-            $orderBy = $column.'.name';
-            $groupBy = $column.'_id';
+            $orderBy = $columnName.'.name';
+            $groupBy = $columnName.'_id';
 
 
             if(in_array('year',[$firstSelect,$currentSelect])) {
@@ -117,18 +117,18 @@ class SearchController extends Controller
 
             }else {
                 $select = ['vehicle.id','vehicle.year'];
-                $orderBy = $column;
-                $groupBy = $column;
+                $orderBy = $columnName;
+                $groupBy = $columnName;
             }
 
-            $$column = $table
+            $selectData = $table
                 ->select($select)
                 ->where($where)
                 ->orderBy($orderBy,'desc')
                 ->groupBy($groupBy)
                 ->get();
 
-            return compact("$column");
+            return ["$columnName" => $selectData];
         }
     }
 
@@ -196,36 +196,15 @@ class SearchController extends Controller
         return $data;
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        if(is_numeric($id)) {
-            $data = Vehicle::query()
-                ->where('id','=',$id)
-                ->with('make','model')
-                ->get()
-                ->first();
-            return view('product.show',compact('data'));
-        }
-    }
-
 
     public function showPart($id) {
         $data = Parts::query()
-            ->join('description','part.id','=','description.id')
             ->where('part.id','=',$id)
+            ->with('description')
             ->get()
             ->first();
+        var_dump($data->id);
         return view('product.showPart',compact('data'));
-    }
-
-    public function showPartVehicle($id) {
-        var_dump($id);
     }
 
     public function showVehiclePart(VehicleParts $vehicleParts,$id) {
@@ -236,6 +215,26 @@ class SearchController extends Controller
             ->get();
         return response()->json($vehicle);
     }
+
+
+    public function showVehicle($id)
+    {
+        $data = Vehicle::query()
+            ->where('id','=',$id)
+            ->with('make','model')
+            ->get()
+            ->first();
+        return view('product.show',compact('data'));
+    }
+
+    public function showPartVehicle($id,VehicleParts $vehicleParts) {
+        $vehicle = $vehicleParts::query()
+            ->where('part_id',$id)
+            ->get();
+        return response()->json($vehicle);
+    }
+
+
 
 
     /**

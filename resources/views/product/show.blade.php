@@ -9,7 +9,7 @@
             <div class="card-body">
                 <h5 class="card-title">Model: {{$data->model[0]['name']}}</h5>
                 <p class="card-text">Year: {{$data->year}}</p>
-                <button type="button" data-action="/showVPart/{{$data->id}}" class="btn btn-warning showParts"><i class="fab fa-openid"></i> Show Parts</button>
+                <button type="button" data-func='generatePart' data-action="/showVehiclePart/{{$data->id}}" class="btn btn-warning showParts"><i class="fab fa-openid"></i> Show Parts</button>
             </div>
         </div>
 

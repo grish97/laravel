@@ -96,13 +96,14 @@ class Request
         $(`.showSelected tbody tr`).empty();
 
        $.each(data,(key,value) => {
+           console.log(value);
            let card = `<div class="card">
                             <img src="/images/300x200.png" alt="Part Image">
                             <div class="card-body">
                                 <p class="card-text"><span class="font-weight-bold">EN</span>: ${value.en}</p>
                                 <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.es}</p>
                                  <p class="card-text"><span class=0"font-weight-bold">Part Number:</span> ${value.part}</p>
-                                <a href="show-part/${value.id}" class="btn btn-info">Show</a>
+                                <a href="/show-part/${value.id}" class="btn btn-info">Show</a>
                             </div>
                         </div>`;
            $(`.card-columns`).append(card);
@@ -149,7 +150,7 @@ class Request
                                 <td>${val.make[0].name}</td>         
                                 <td>${val.model[0].name}</td>         
                                 <td>${val.year}</td>         
-                                <td><a href="/show/${val.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>         
+                                <td><a href="/show-vehicle/${val.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>         
                            </tr>`;
 
             table.find(`tbody`).append(row);
@@ -166,24 +167,30 @@ class Request
         });
     }
 
-    showParts(url) {
+    show(url,generate) {
+
        $.ajax({
            url : url,
            method : 'get',
            dataType : 'json',
        }).done((data) => {
-           $.each(data,(key,value) => {
-               let card = `<div class="card">
+           request[generate](data);
+       });
+    }
+
+    generatePart(data) {
+        $.each(data,(key,value) => {
+            let card = `<div class="card">
                             <img src="/images/300x200.png" alt="Part Image">
                             <div class="card-body">
                                  <p class="card-text"><span class="font-weight-bold">Part Number: </span> ${value.part}</p>   
                                 <p class="card-text"><span class="font-weight-bold">EN: </span> ${value.en}</p>
-                                <p class="card-text"><span class="font-weight-bold">ES: </span> ${value.es}</p>                                       
+                                <p class="card-text"><span class="font-weight-bold">ES: </span> ${value.es}</p>    
+                                <a href="/show-part/${value.part_id}" class="btn btn-info">Show</a>                                   
                             </div>
                         </div>`;
-               $(`.card-columns`).append(card);
-           });
-       });
+            $(`.card-columns`).append(card);
+        });
     }
 
     reset() {
@@ -284,6 +291,7 @@ $(document).on(`click`,`.reset`,(e) => {
     e.preventDefault();
    request.reset();
 });
+
 $(document).on(`submit`,`#selectForm`,(e) => {
     e.preventDefault();
     $(`.showSelected tbody tr`).empty();
@@ -294,10 +302,11 @@ $(document).on(`submit`,`#selectForm`,(e) => {
 $(document).on(`click`,`.showParts`,(e) => {
     e.preventDefault();
     let elem = $(e.target),
-        url = elem.attr(`data-action`);
+        url = elem.attr(`data-action`),
+        showFunc = elem.attr(`data-func`);
     elem.attr(`disabled`,`disabled`);
     $(`.card-columns`).empty();
-    request.showParts(url);
+    request.show(url,showFunc);
 });
 
 $(document).on('click',`.page-link`,(e) => {
