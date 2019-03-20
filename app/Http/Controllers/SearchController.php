@@ -43,10 +43,30 @@ class SearchController extends Controller
         return response()->json($data);
     }
 
-    public function getSelectValue($makeId = null, $modelId = null, $yearId = null, $selected)    {
+    public function queryMethod($data,$selected) {
         list($firstSelect, $currentSelect, $lastSelect) = $selected;
+        $selectName = ['make', 'model', 'year'];
 
-        $dataName = ['make', 'model', 'year'];
+        $where = [];
+        $select = [];
+
+        $different = array_diff($selectName,$selected);
+
+        $count = count($data);
+
+        if($count != 1 && $firstSelect == $currentSelect) {
+            $data = [$firstSelect => $data[$firstSelect]];
+            $different = array_diff($selected,[$firstSelect]);
+        }elseif($count != 1 && $firstSelect != $currentSelect && $lastSelect != $currentSelect) {
+            unset($data[$currentSelect]);
+            var_dump($data);
+        }
+    }
+
+    public function getSelectValue($makeId = null, $modelId = null, $yearId = null, $selected)    {
+        $table = Vehicle::query()
+            ->leftJoin('make','vehicle.make_id','=','make.id')
+            ->leftJoin('model','vehicle.model_id','=','model.id');
 
         $data  = array_filter(['make' => $makeId, 'model' => $modelId,'year' =>  $yearId],function($elem) {
             return $elem != null;
@@ -54,79 +74,124 @@ class SearchController extends Controller
 
         $count = count($data);
 
-        $table = Vehicle::query()
-            ->leftJoin('make','vehicle.make_id','=','make.id')
-            ->leftJoin('model','vehicle.model_id','=','model.id');
+        $this->queryMethod($data,$selected);
+        exit;
+        foreach($data as $key => $val) {
+            $columnId = $key.'_id';
 
-        if($count === 1 || $firstSelect === $currentSelect) {
-            $dataName = array_diff($dataName, [$firstSelect]);
-            $columnName1 = reset($dataName);
-            $columnName2 = end($dataName);
-
-            $selectColumn1 = [$columnName1.'_id', $columnName1.'.name'];
-            $selectColumn2 = ($columnName2 == 'year') ? ['vehicle.id','vehicle.'.$columnName2] : [$columnName2.'_id',$columnName2.'.name'];
-
-            $where = ($firstSelect == 'year')  ?  [[$firstSelect,$data[$firstSelect]]]  :  [[$firstSelect.'_id',$data[$firstSelect]]];
-
-            $selectData1 = $table
-                ->select($selectColumn1)
-                ->where($where)
-                ->get();
-
-            $selectData2 = $table
-                ->select($selectColumn2)
-                ->get();
-
-            if($firstSelect != 'year') {
-                $selectData1 = $selectData1->unique($columnName1.'_id');
-                $selectData2 = $selectData2->unique($columnName2);
-            }else {
-                $selectData1  = $selectData1->unique($columnName1.'_id');
-                $selectData2  = $selectData2->unique($columnName2.'_id');
+            if($key == 'year') {
+                $columnId = 'vehicle.id';
             }
-
-            return ["$columnName1" => $selectData1,"$columnName2" => $selectData2];
-
-        }elseif($count === 2 || ($firstSelect != $currentSelect &&  $lastSelect != $currentSelect)) {
-            $dataName = array_diff($dataName,[$firstSelect,$currentSelect]);
-            $columnName = reset($dataName);
-
-            $select = [$columnName.'_id',$columnName.'.name'];
-
-            $where = [
-                [$firstSelect.'_id',$data[$firstSelect]],
-                [$currentSelect.'_id',$data[$currentSelect]]
-                ];
-
-            $orderBy = $columnName.'.name';
-            $groupBy = $columnName.'_id';
-
-
-            if(in_array('year',[$firstSelect,$currentSelect])) {
-               if($firstSelect == 'year') $where = [
-                                            [$firstSelect,$data[$firstSelect]],
-                                            [$currentSelect.'_id',$data[$currentSelect]]
-                                       ];
-               else $where = [
-                       [$firstSelect.'_id',$data[$firstSelect]],
-                       [$currentSelect,$data[$currentSelect]]
-                    ];
-
-            }else {
-                $select = ['vehicle.id','vehicle.year'];
-                $orderBy = $columnName;
-                $groupBy = $columnName;
-            }
-
-            $selectData = $table
-                ->select($select)
-                ->where($where)
-                ->orderBy($orderBy,'desc')
-                ->groupBy($groupBy)
-                ->get();
-
-            return ["$columnName" => $selectData];
+            array_push($where,[$columnId,$val]);
         }
+
+        foreach($different as $val) {
+            $columnId = $val.'_id';
+            $columnName = $val.'.name';
+
+            if($val == 'year') {
+                $columnId = 'vehicle.id';
+                $columnName = 'vehicle.'.$val;
+            }
+
+            array_push($select,[$columnId,$columnName]);
+        }
+
+
+        if($count == 1 || $firstSelect === $currentSelect) {
+            var_dump($data);
+            $columnName1 = reset($different);
+            $columnName2 = end($different);
+
+            $data1 = $table
+                ->select($select[0])
+                ->where($where)
+                ->get();
+
+            $data2 = $table
+                ->select($select[1])
+                ->get();
+            return ["$columnName1" => $data1,"$columnName2" => $data2];
+        }elseif($count == 2 || ($firstSelect != $currentSelect && $lastSelect != $currentSelect)) {
+            $columnName = reset($different);
+            $data = $table
+                ->select($select[0])
+                ->where($where)
+                ->get();
+            return ["$columnName" => $data];
+        }
+//        $count = count($data);
+//
+//
+//        if($count === 1 || $firstSelect === $currentSelect) {
+//            $dataName = array_diff($dataName, [$firstSelect]);
+//            $columnName1 = reset($dataName);
+//            $columnName2 = end($dataName);
+//
+//            $selectColumn1 = [$columnName1.'_id', $columnName1.'.name'];
+//            $selectColumn2 = ($columnName2 == 'year') ? ['vehicle.id','vehicle.'.$columnName2] : [$columnName2.'_id',$columnName2.'.name'];
+//
+//            $where = ($firstSelect == 'year')  ?  [[$firstSelect,$data[$firstSelect]]]  :  [[$firstSelect.'_id',$data[$firstSelect]]];
+//
+//            $selectData1 = $table
+//                ->select($selectColumn1)
+//                ->where($where)
+//                ->get();
+//
+//            $selectData2 = $table
+//                ->select($selectColumn2)
+//                ->get();
+//
+//            if($firstSelect != 'year') {
+//                $selectData1 = $selectData1->unique($columnName1.'_id');
+//                $selectData2 = $selectData2->unique($columnName2);
+//            }else {
+//                $selectData1  = $selectData1->unique($columnName1.'_id');
+//                $selectData2  = $selectData2->unique($columnName2.'_id');
+//            }
+//
+//            return ["$columnName1" => $selectData1,"$columnName2" => $selectData2];
+//
+//        }elseif($count === 2 || ($firstSelect != $currentSelect &&  $lastSelect != $currentSelect)) {
+//            $dataName = array_diff($dataName,[$firstSelect,$currentSelect]);
+//            $columnName = reset($dataName);
+//
+//            $select = [$columnName.'_id',$columnName.'.name'];
+//
+//            $where = [
+//                [$firstSelect.'_id',$data[$firstSelect]],
+//                [$currentSelect.'_id',$data[$currentSelect]]
+//                ];
+//
+//            $orderBy = $columnName.'.name';
+//            $groupBy = $columnName.'_id';
+//
+//
+//            if(in_array('year',[$firstSelect,$currentSelect])) {
+//               if($firstSelect == 'year') $where = [
+//                                            [$firstSelect,$data[$firstSelect]],
+//                                            [$currentSelect.'_id',$data[$currentSelect]]
+//                                       ];
+//               else $where = [
+//                       [$firstSelect.'_id',$data[$firstSelect]],
+//                       [$currentSelect,$data[$currentSelect]]
+//                    ];
+//
+//            }else {
+//                $select = ['vehicle.id','vehicle.year'];
+//                $orderBy = $columnName;
+//                $groupBy = $columnName;
+//            }
+//
+//            $selectData = $table
+//                ->select($select)
+//                ->where($where)
+//                ->orderBy($orderBy,'desc')
+//                ->groupBy($groupBy)
+//                ->get();
+//
+//            return ["$columnName" => $selectData];
+//        }
     }
 
     public function reset(Makes $make, Models $model,Vehicle $vehicle) {
@@ -137,54 +202,18 @@ class SearchController extends Controller
     }
 
     public function showSelected(Request $request,Vehicle $vehicle) {
-            $selected = array_filter($request->selected,function($elem) {
-                return $elem != null;
-            });
+        $selected = array_filter($request->selected,function($elem) {
+            return $elem != null;
+        });
 
-            $selectKey = array_keys($selected);
-            $selectedCount = count($selected);
+        $where = [];
 
-            $where = [];
-
-            if($selectedCount === 1) {
-                list($select) = $selectKey;
-                $column = ($select == 'year') ? $select : $select.'_id';
-                $value  = $selected[$select];
-
-                $where = [
-                    [$column,$value]
-                ];
-
-            }elseif($selectedCount === 2) {
-                list($selectOne,$selectTwo) = $selectKey;
-                $columnOne = ($selectOne === 'year') ? $selectOne : $selectOne.'_id';
-                $columnTwo = ($selectTwo === 'year') ? $selectTwo : $selectTwo.'_id';
-
-                $valueOne  = $selected[$selectOne];
-                $valueTwo  = $selected[$selectTwo];
-
-                $where = [
-                    [$columnOne,$valueOne],
-                    [$columnTwo,$valueTwo]
-                ];
-
-            }else {
-                list($selectOne,$selectTwo,$selectThree) = $selectKey;
-                $columnOne = ($selectOne === 'year') ? $selectOne : $selectOne.'_id';
-                $columnTwo = ($selectTwo === 'year') ? $selectTwo : $selectTwo.'_id';
-                $columnThree = ($selectThree === 'year') ? $selectThree : $selectThree.'_id';
-
-                $valueOne  = $selected[$selectOne];
-                $valueTwo  = $selected[$selectTwo];
-                $valueThree  = $selected[$selectThree];
-
-                $where = [
-                    [$columnOne,$valueOne],
-                    [$columnTwo,$valueTwo],
-                    [$columnThree,$valueThree],
-                ];
+        foreach($selected as $key => $val) {
+            if($key != 'year') {
+                $key = $key.'_id';
             }
-
+            array_push($where,[$key,$val]);
+        }
 
         $data = $vehicle::query()
             ->where($where)
