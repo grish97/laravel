@@ -26,7 +26,8 @@ class SearchController extends Controller
         $name = $request->get('name');
 
         $data = $parts::query()
-            ->join('description','part.id','=','description.id')
+            ->select('part.id as partId','part.part','description.en','description.es')
+            ->leftJoin('description','part.description_id','=','description.id')
             ->where('es','like',"%$name%")
             ->orWhere('en','like',"%$name%")
             ->orWhere('part','like',"%$name%")
@@ -197,13 +198,12 @@ class SearchController extends Controller
     }
 
 
-    public function showPart($id) {
-        $data = Parts::query()
-            ->where('part.id','=',$id)
+    public function showPart(Parts $parts,$id) {
+        $data = $parts::query()
+            ->where('id',$id)
             ->with('description')
-            ->get()
             ->first();
-        var_dump($data->id);
+
         return view('product.showPart',compact('data'));
     }
 
@@ -229,7 +229,12 @@ class SearchController extends Controller
 
     public function showPartVehicle($id,VehicleParts $vehicleParts) {
         $vehicle = $vehicleParts::query()
-            ->where('part_id',$id)
+            ->select('vehicle.id','vehicle.make_id','make.name as make','vehicle.model_id','model.name as model','vehicle.year')
+            ->leftJoin('vehicle','vehicle_part.vehicle_id','vehicle.id')
+            ->leftJoin('make','vehicle.make_id','make.id')
+            ->leftJoin('model','vehicle.model_id','model.id')
+            ->where('vehicle_part.part_id',$id)
+            ->groupBy('vehicle.model_id')
             ->get();
         return response()->json($vehicle);
     }

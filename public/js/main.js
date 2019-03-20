@@ -7,7 +7,8 @@ class Request
         this.year = false;
     }
 
-    getData (url,form) {let formData = new FormData(form);
+    getData (url,form) {
+        let formData = new FormData(form);
 
         $.ajax({
             url : url,
@@ -96,14 +97,13 @@ class Request
         $(`.showSelected tbody tr`).empty();
 
        $.each(data,(key,value) => {
-           console.log(value);
            let card = `<div class="card">
                             <img src="/images/300x200.png" alt="Part Image">
                             <div class="card-body">
+                                <p class="card-text"><span class="font-weight-bold">Part Number:</span> ${value.part}</p>
                                 <p class="card-text"><span class="font-weight-bold">EN</span>: ${value.en}</p>
-                                <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.es}</p>
-                                 <p class="card-text"><span class=0"font-weight-bold">Part Number:</span> ${value.part}</p>
-                                <a href="/show-part/${value.id}" class="btn btn-info">Show</a>
+                                <p class="card-text"><span class="font-weight-bold">ES</span>: ${value.es}</p>                   
+                                <a href="/show-part/${value.partId}" class="btn btn-info">Show</a>
                             </div>
                         </div>`;
            $(`.card-columns`).append(card);
@@ -143,10 +143,10 @@ class Request
             paginateBlock = $(`.paginateBlock`);
         table.removeClass(`d-none`);
         paginateBlock.removeClass(`d-none`);
-
+        console.log(data);
         $.each(data,(key,val) => {
             let row = `<tr>
-                                <td>${key}</td>         
+                                <td>${key+1}</td>         
                                 <td>${val.make[0].name}</td>         
                                 <td>${val.model[0].name}</td>         
                                 <td>${val.year}</td>         
@@ -190,6 +190,23 @@ class Request
                             </div>
                         </div>`;
             $(`.card-columns`).append(card);
+        });
+    }
+
+    generateVehicle(data) {
+        let table = $(`.showVehicle`);
+        table.removeClass(`d-none`);
+
+        $.each(data,(key,val) => {
+            let row = `<tr>
+                                <td>${key+1}</td>         
+                                <td>${val.make}</td>         
+                                <td>${val.model}</td>         
+                                <td>${val.year}</td>         
+                                <td><a href="/show-vehicle/${val.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>         
+                           </tr>`;
+
+            table.find(`tbody`).append(row);
         });
     }
 
