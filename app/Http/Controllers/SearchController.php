@@ -19,11 +19,7 @@ class SearchController extends Controller
      */
     public function index(Request $request,Parts $parts)
     {
-        $this->validate($request,[
-            'name' => 'required'
-        ]);
-
-        $name = $request->get('name');
+        $name = $request->name;
 
         $data = $parts::query()
             ->select('part.id as partId','part.part','description.en','description.es')
@@ -32,8 +28,8 @@ class SearchController extends Controller
             ->orWhere('en','like',"%$name%")
             ->orWhere('part','like',"%$name%")
             ->get();
-        if(count($data) != 0) return response()->json($data);
-        else return response()->json([]);
+
+        return response()->json($data);
     }
 
     public function fillSelect(Request $request) {
@@ -42,15 +38,15 @@ class SearchController extends Controller
         $yearId =  $request->year;
         $selected = $request->selected;
 
-        $data = $this->getSelectValue($makeId,$modelId,$yearId,$selected);
+        $data = $this->getSelectValue($makeId, $modelId, $yearId, $selected);
 
         return response()->json($data);
     }
 
-    public function getSelectValue($makeId = null,$modelId = null,$yearId = null,$selected)    {
-        list($firstSelect,$currentSelect,$lastSelect) = $selected;
+    public function getSelectValue($makeId = null, $modelId = null, $yearId = null, $selected)    {
+        list($firstSelect, $currentSelect, $lastSelect) = $selected;
 
-        $dataName = ['make','model','year'];
+        $dataName = ['make', 'model', 'year'];
 
         $data  = array_filter(['make' => $makeId, 'model' => $modelId,'year' =>  $yearId],function($elem) {
             return $elem != null;
@@ -63,11 +59,11 @@ class SearchController extends Controller
             ->leftJoin('model','vehicle.model_id','=','model.id');
 
         if($count === 1 || $firstSelect === $currentSelect) {
-            $dataName = array_diff($dataName,[$firstSelect]);
+            $dataName = array_diff($dataName, [$firstSelect]);
             $columnName1 = reset($dataName);
             $columnName2 = end($dataName);
 
-            $selectColumn1 = [$columnName1.'_id',$columnName1.'.name'];
+            $selectColumn1 = [$columnName1.'_id', $columnName1.'.name'];
             $selectColumn2 = ($columnName2 == 'year') ? ['vehicle.id','vehicle.'.$columnName2] : [$columnName2.'_id',$columnName2.'.name'];
 
             $where = ($firstSelect == 'year')  ?  [[$firstSelect,$data[$firstSelect]]]  :  [[$firstSelect.'_id',$data[$firstSelect]]];
@@ -189,6 +185,7 @@ class SearchController extends Controller
                 ];
             }
 
+
         $data = $vehicle::query()
             ->where($where)
             ->with('make','model')
@@ -202,7 +199,7 @@ class SearchController extends Controller
         $data = $parts::query()
             ->where('id',$id)
             ->with('description')
-            ->first();
+            ->firstOrFail();
 
         return view('product.showPart',compact('data'));
     }
@@ -213,6 +210,7 @@ class SearchController extends Controller
             ->leftJoin('part','vehicle_part.part_id','=','part.id')
             ->join('description','part.description_id','=','description.id')
             ->get();
+
         return response()->json($vehicle);
     }
 
@@ -222,34 +220,23 @@ class SearchController extends Controller
         $data = Vehicle::query()
             ->where('id','=',$id)
             ->with('make','model')
-            ->get()
-            ->first();
+            ->firstOrFail();
         return view('product.show',compact('data'));
     }
 
     public function showPartVehicle($id,VehicleParts $vehicleParts) {
         $vehicle = $vehicleParts::query()
-            ->select('vehicle.id','vehicle.make_id','make.name as make','vehicle.model_id','model.name as model','vehicle.year')
+            ->select('vehicle.id','vehicle.make_id','make.name as make','vehicle.model_id','model.name as model','vehicle.year', 'type.name as type_name', 'type.id as type_id')
             ->leftJoin('vehicle','vehicle_part.vehicle_id','vehicle.id')
             ->leftJoin('make','vehicle.make_id','make.id')
             ->leftJoin('model','vehicle.model_id','model.id')
-            ->where('vehicle_part.part_id',$id)
-            ->groupBy('vehicle.model_id')
+            ->leftJoin('type','vehicle.type_id','type.id')
+            ->where('vehicle_part.part_id', $id)
+            ->orderBy('make.name', 'asc')
+            ->orderBy('model.name', 'asc')
+            ->orderBy('vehicle.year', 'desc')
             ->get();
+
         return response()->json($vehicle);
-    }
-
-
-
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }

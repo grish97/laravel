@@ -40,14 +40,14 @@
                             <select class="custom-select" id="year" name="year">
                                 <option value="">Year</option>
                                 @foreach($years as $key => $year)
-                                    <option class="" value="{{$year->id}}">{{$year->year}}</option>
+                                    <option class="" value="{{$year->year}}">{{$year->year}}</option>
                                 @endforeach;
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-success ml-3">Search</button>
+                    <button type="submit" class="btn btn-info ml-3">Search</button>
                 </form>
-                <button type="submit" class="btn btn-danger reset ml-2">Reset</button>
+                <button type="submit" class="btn btn-danger reset ml-2"><i class="fas fa-trash-restore"></i></button>
             </div>
         </div>
 

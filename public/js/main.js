@@ -2,28 +2,29 @@ class Request
 {
     constructor() {
         this.selected = [];
-        this.make = false;
-        this.model = false;
-        this.year = false;
     }
 
-    getData (url,form) {
-        let formData = new FormData(form);
+    getData (url) {
+        let input = $(`#name`),
+            inpVal = input.val();
+
+        if(!inpVal.trim() || inpVal.length > 100) {
+            alert('Empty Data');
+            input.val(``);
+            return false;
+        }
 
         $.ajax({
             url : url,
-            data : formData,
+            data : {name : inpVal},
 
             type : "post",
             dataType : 'json',
-            contentType: false,
-            processData: false,
             success : (data) =>
             {
-                if(data.length === 0) {
-                    alert('Empty Data');
-                    $(form).find(`#name`).val(``);
-                    return false;
+                if(!data.length) {
+                    alert('Empty');
+                    input.val(``);
                 }
                 request.generateView(data);
             },
@@ -36,8 +37,8 @@ class Request
     fillSelect (elemId,id) {
         let make = $(`#make`).val(),
             model = $(`#model`).val(),
-            year = $(`#year`);
-        year = year.find(`option[value='${year.val()}']`).text();
+            year = $(`#year`).val();
+        year = (year === 'Year') ? '' : year;
 
         if(id) {
             $.ajax({
@@ -46,7 +47,7 @@ class Request
                 data : {
                     make : make,
                     model : model,
-                    year  :year === 'Year' ? '' : year,
+                    year  :year,
                     selected : [this.selected[0],elemId,this.selected[this.selected.length-1]],
                 },
                 dataType : 'json',
@@ -75,7 +76,7 @@ class Request
            });
 
             $.each(data[selectTwo],(key,val) => {
-                let selectBlock = `<option value="${(selectTwo === 'year') ? val.id : val[selectTwo+'_id']}">${val.name ? val.name :  val.year}</option>`;
+                let selectBlock = `<option value="${(selectTwo === 'year') ? val.year : val[selectTwo+'_id']}">${val.name ? val.name :  val.year}</option>`;
                 $(`#${selectTwo}`).append(selectBlock);
             });
 
@@ -85,7 +86,7 @@ class Request
              this.emptySelect(select);
 
              $.each(data[select], (key,val) => {
-                 let selectBlock = `<option value="${(select === 'year') ? val.id : val[select+'_id']}">${val.name ? val.name :  val.year}</option>`;
+                 let selectBlock = `<option value="${(select === 'year') ? val.year : val[select+'_id']}">${val.name ? val.name :  val.year}</option>`;
                  $(`#${select}`).append(selectBlock);
              });
         }
@@ -113,9 +114,8 @@ class Request
     showSelected() {
         let makeVal = $(`#make`).val(),
             modelVal = $(`#model`).val(),
-            year = $(`#year`),
-            yearVal =  year.find(`option[value='${year.val()}']`).text();
-            yearVal = (yearVal === 'Year') ? '' : yearVal;
+            year = $(`#year`).val(),
+            yearVal = (year === 'Year') ? '' : year;
 
         if(!makeVal && !modelVal && !yearVal) {
             alert('Empty');
@@ -134,6 +134,10 @@ class Request
             dataType : 'json',
             data : {selected : selected},
         }).done((data) => {
+            if(!data.length) {
+                alert('Empty');
+                return false;
+            }
             this.generateTable(data);
         });
     }
@@ -143,7 +147,7 @@ class Request
             paginateBlock = $(`.paginateBlock`);
         table.removeClass(`d-none`);
         paginateBlock.removeClass(`d-none`);
-        console.log(data);
+
         $.each(data,(key,val) => {
             let row = `<tr>
                                 <td>${key+1}</td>         
@@ -157,16 +161,6 @@ class Request
         });
     }
 
-    nextPage (url) {
-        $.ajax({
-            url : url,
-            method : 'post',
-            dataType : 'json',
-        }).done((data) => {
-            console.log(data)
-        });
-    }
-
     show(url,generate) {
 
        $.ajax({
@@ -174,6 +168,10 @@ class Request
            method : 'get',
            dataType : 'json',
        }).done((data) => {
+           if(!data.length) {
+               alert('Empty');
+               return false;
+           }
            request[generate](data);
        });
     }
@@ -202,6 +200,7 @@ class Request
                                 <td>${key+1}</td>         
                                 <td>${val.make}</td>         
                                 <td>${val.model}</td>         
+                                <td>${val.type_name}</td>         
                                 <td>${val.year}</td>         
                                 <td><a href="/show-vehicle/${val.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>         
                            </tr>`;
@@ -225,9 +224,6 @@ class Request
         $(`#name`).val(``);
         showSelected.addClass(`d-none`);
 
-        this.make = false;
-        this.model = false;
-        this.year = false;
         this.selected = [];
 
         $.ajax({
@@ -246,7 +242,7 @@ class Request
            });
 
             $.each(data.years, (key,value) => {
-                let option = `<option value="${value.id}">${value.year}</option>`;
+                let option = `<option value="${value.year}">${value.year}</option>`;
                 year.append(option);
             });
         });
@@ -262,7 +258,7 @@ class Request
         return finalArray;
     }
 
-    emptySelect(select1,select2 = '') {
+      emptySelect(select1,select2 = '') {
         let _select1 = select1.charAt(0).toUpperCase() + select1.slice(1);
         let defaultVal = `<option value="">${_select1}</option>`;
         $(`#${select1}`).empty().append(defaultVal);
@@ -274,7 +270,7 @@ class Request
         }
 
         return true;
-    }
+     }
 }
 
 let request = new Request();
@@ -287,9 +283,8 @@ $.ajaxSetup({
 
 $(document).on(`submit`,`.formMake`,(e) => {
     e.preventDefault();
-    let form = $(e.target)[0],
-         url = $(e.target).find(`.request`).attr(`data-action`);
-    if(url) request.getData(url,form);
+    let url = $(e.target).find(`.request`).attr(`data-action`);
+    if(url) request.getData(url);
 });
 
 $(document).on('change','select',(e) => {
@@ -302,11 +297,6 @@ $(document).on('change','select',(e) => {
             selectArr.push(elemId);
         }
     request.fillSelect(elemId,id);
-});
-
-$(document).on(`click`,`.reset`,(e) => {
-    e.preventDefault();
-   request.reset();
 });
 
 $(document).on(`submit`,`#selectForm`,(e) => {
@@ -326,9 +316,7 @@ $(document).on(`click`,`.showParts`,(e) => {
     request.show(url,showFunc);
 });
 
-$(document).on('click',`.page-link`,(e) => {
+$(document).on(`click`,`.reset`,(e) => {
     e.preventDefault();
-    let elem = $(e.target),
-        url = elem.attr('href');
-    request.nextPage(url);
+    request.reset();
 });

@@ -22,6 +22,7 @@
                     <th>N</th>
                     <th>Make</th>
                     <th>Model</th>
+                    <th>Type</th>
                     <th>Year of production</th>
                     <th>Action</th>
                 </tr>
