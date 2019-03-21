@@ -43,26 +43,6 @@ class SearchController extends Controller
         return response()->json($data);
     }
 
-    public function queryMethod($data,$selected) {
-        list($firstSelect, $currentSelect, $lastSelect) = $selected;
-        $selectName = ['make', 'model', 'year'];
-
-        $where = [];
-        $select = [];
-
-        $different = array_diff($selectName,$selected);
-
-        $count = count($data);
-
-        if($count != 1 && $firstSelect == $currentSelect) {
-            $data = [$firstSelect => $data[$firstSelect]];
-            $different = array_diff($selected,[$firstSelect]);
-        }elseif($count != 1 && $firstSelect != $currentSelect && $lastSelect != $currentSelect) {
-            unset($data[$currentSelect]);
-            var_dump($data);
-        }
-    }
-
     public function getSelectValue($makeId = null, $modelId = null, $yearId = null, $selected)    {
         $table = Vehicle::query()
             ->leftJoin('make','vehicle.make_id','=','make.id')
@@ -74,131 +54,95 @@ class SearchController extends Controller
 
         $count = count($data);
 
-        $this->queryMethod($data,$selected);
-        exit;
-        foreach($data as $key => $val) {
-            $columnId = $key.'_id';
+        list($firstSelect, $currentSelect, $lastSelect) = $selected;
 
-            if($key == 'year') {
-                $columnId = 'vehicle.id';
-            }
-            array_push($where,[$columnId,$val]);
-        }
-
-        foreach($different as $val) {
-            $columnId = $val.'_id';
-            $columnName = $val.'.name';
-
-            if($val == 'year') {
-                $columnId = 'vehicle.id';
-                $columnName = 'vehicle.'.$val;
-            }
-
-            array_push($select,[$columnId,$columnName]);
-        }
-
+        $queryMethod = $this->queryMethod($data,$selected);
+        $where = $queryMethod['where'];
+        $select = $queryMethod['select'];
+        $unique = $queryMethod['unique'];
+        $orderBy = $queryMethod['orderBy'];
+        $different = $queryMethod['different'];
 
         if($count == 1 || $firstSelect === $currentSelect) {
-            var_dump($data);
             $columnName1 = reset($different);
             $columnName2 = end($different);
 
             $data1 = $table
                 ->select($select[0])
                 ->where($where)
-                ->get();
+                ->orderBy($orderBy[0])
+                ->get()
+                ->unique($unique[0]);
 
             $data2 = $table
                 ->select($select[1])
-                ->get();
+                ->orderBy($orderBy[1])
+                ->get()
+                ->unique($unique[1]);
+
             return ["$columnName1" => $data1,"$columnName2" => $data2];
         }elseif($count == 2 || ($firstSelect != $currentSelect && $lastSelect != $currentSelect)) {
             $columnName = reset($different);
-            $data = $table
+
+            $data1 = $table
                 ->select($select[0])
                 ->where($where)
-                ->get();
-            return ["$columnName" => $data];
+                ->orderBy($orderBy[0])
+                ->get()
+                ->unique($unique[0]);
+
+            return ["$columnName" => $data1];
         }
-//        $count = count($data);
-//
-//
-//        if($count === 1 || $firstSelect === $currentSelect) {
-//            $dataName = array_diff($dataName, [$firstSelect]);
-//            $columnName1 = reset($dataName);
-//            $columnName2 = end($dataName);
-//
-//            $selectColumn1 = [$columnName1.'_id', $columnName1.'.name'];
-//            $selectColumn2 = ($columnName2 == 'year') ? ['vehicle.id','vehicle.'.$columnName2] : [$columnName2.'_id',$columnName2.'.name'];
-//
-//            $where = ($firstSelect == 'year')  ?  [[$firstSelect,$data[$firstSelect]]]  :  [[$firstSelect.'_id',$data[$firstSelect]]];
-//
-//            $selectData1 = $table
-//                ->select($selectColumn1)
-//                ->where($where)
-//                ->get();
-//
-//            $selectData2 = $table
-//                ->select($selectColumn2)
-//                ->get();
-//
-//            if($firstSelect != 'year') {
-//                $selectData1 = $selectData1->unique($columnName1.'_id');
-//                $selectData2 = $selectData2->unique($columnName2);
-//            }else {
-//                $selectData1  = $selectData1->unique($columnName1.'_id');
-//                $selectData2  = $selectData2->unique($columnName2.'_id');
-//            }
-//
-//            return ["$columnName1" => $selectData1,"$columnName2" => $selectData2];
-//
-//        }elseif($count === 2 || ($firstSelect != $currentSelect &&  $lastSelect != $currentSelect)) {
-//            $dataName = array_diff($dataName,[$firstSelect,$currentSelect]);
-//            $columnName = reset($dataName);
-//
-//            $select = [$columnName.'_id',$columnName.'.name'];
-//
-//            $where = [
-//                [$firstSelect.'_id',$data[$firstSelect]],
-//                [$currentSelect.'_id',$data[$currentSelect]]
-//                ];
-//
-//            $orderBy = $columnName.'.name';
-//            $groupBy = $columnName.'_id';
-//
-//
-//            if(in_array('year',[$firstSelect,$currentSelect])) {
-//               if($firstSelect == 'year') $where = [
-//                                            [$firstSelect,$data[$firstSelect]],
-//                                            [$currentSelect.'_id',$data[$currentSelect]]
-//                                       ];
-//               else $where = [
-//                       [$firstSelect.'_id',$data[$firstSelect]],
-//                       [$currentSelect,$data[$currentSelect]]
-//                    ];
-//
-//            }else {
-//                $select = ['vehicle.id','vehicle.year'];
-//                $orderBy = $columnName;
-//                $groupBy = $columnName;
-//            }
-//
-//            $selectData = $table
-//                ->select($select)
-//                ->where($where)
-//                ->orderBy($orderBy,'desc')
-//                ->groupBy($groupBy)
-//                ->get();
-//
-//            return ["$columnName" => $selectData];
-//        }
+
     }
 
-    public function reset(Makes $make, Models $model,Vehicle $vehicle) {
-        $makes = $make::query()->groupBy('name')->get();
-        $models = $model::query()->groupBy('name')->get();
-        $years =  $vehicle::query()->select('id', 'year')->groupBy('year')->orderBy('year','desc')->get();
-        return response()->json(['makes' => $makes,'models' => $models,'years' => $years]);
+    public function queryMethod($data,$selected) {
+        list($firstSelect, $currentSelect, $lastSelect) = $selected;
+        $selectName = ['make', 'model', 'year'];
+        $different = array_diff($selectName,$selected);
+        $count = count($data);
+
+        $where = [];
+        $select = [];
+        $unique = [];
+        $orderBy = [];
+
+        if($count != 1 && $firstSelect == $currentSelect) {
+            $data = [$firstSelect => $data[$firstSelect]];
+            $different = array_diff($selectName,[$firstSelect]);
+        }elseif($count != 1 && $firstSelect != $currentSelect && $lastSelect != $currentSelect) {
+            $data = [
+                $firstSelect => $data[$firstSelect],
+                $currentSelect => $data[$currentSelect]
+            ];
+            $different = array_diff($selectName,[$firstSelect,$currentSelect]);
+        }
+
+        foreach($data as $key => $val) {
+            $columnId = $key.'_id';
+
+            if($key == 'year') $columnId = 'vehicle.year';
+            array_push($where,[$columnId,$val]);
+        }
+
+        foreach($different as $val) {
+            $columnId = $val.'_id';
+            $columnName = $val.'.name';
+            $uniqueColumn = $columnId;
+
+            if($val == 'year') {
+                $columnId = 'vehicle.id';
+                $columnName = $val;
+                $uniqueColumn = $columnName;
+            }
+
+            array_push($select,[$columnId,$columnName]);
+            array_push($unique,$uniqueColumn);
+            array_push($orderBy,$columnName);
+        }
+
+        return ['where' => $where, 'select' => $select, 'unique' => $unique, 'orderBy' => $orderBy, 'different' => $different];
+
     }
 
     public function showSelected(Request $request,Vehicle $vehicle) {
@@ -217,12 +161,18 @@ class SearchController extends Controller
 
         $data = $vehicle::query()
             ->where($where)
-            ->with('make','model')
+            ->with('make','model','type')
             ->get();
 
         return $data;
     }
 
+    public function reset(Makes $make, Models $model,Vehicle $vehicle) {
+        $makes = $make::query()->groupBy('name')->get();
+        $models = $model::query()->groupBy('name')->get();
+        $years =  $vehicle::query()->select('id', 'year')->groupBy('year')->orderBy('year','desc')->get();
+        return response()->json(['makes' => $makes,'models' => $models,'years' => $years]);
+    }
 
     public function showPart(Parts $parts,$id) {
         $data = $parts::query()

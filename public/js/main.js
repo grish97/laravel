@@ -153,6 +153,7 @@ class Request
                                 <td>${key+1}</td>         
                                 <td>${val.make[0].name}</td>         
                                 <td>${val.model[0].name}</td>         
+                                <td>${val.type.name}</td>         
                                 <td>${val.year}</td>         
                                 <td><a href="/show-vehicle/${val.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>         
                            </tr>`;
