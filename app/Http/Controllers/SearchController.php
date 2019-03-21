@@ -188,8 +188,7 @@ class SearchController extends Controller
     }
 
 
-    public function showVehicle($id)
-    {
+    public function showVehicle($id) {
         $data = Vehicle::query()
             ->where('id','=',$id)
             ->with('make','model')
@@ -199,15 +198,11 @@ class SearchController extends Controller
 
     public function showPartVehicle($id,VehicleParts $vehicleParts) {
         $vehicle = $vehicleParts::query()
-            ->select('vehicle.id','vehicle.make_id','make.name as make','vehicle.model_id','model.name as model','vehicle.year', 'type.name as type_name', 'type.id as type_id')
-            ->leftJoin('vehicle','vehicle_part.vehicle_id','vehicle.id')
-            ->leftJoin('make','vehicle.make_id','make.id')
-            ->leftJoin('model','vehicle.model_id','model.id')
-            ->leftJoin('type','vehicle.type_id','type.id')
-            ->where('vehicle_part.part_id', $id)
-            ->orderBy('make.name', 'asc')
-            ->orderBy('model.name', 'asc')
-            ->orderBy('vehicle.year', 'desc')
+            ->with(['vehicle' => function($query) {
+                $query->with('make','model','type');
+            }])
+            ->where('part_id','=',$id)
+            ->groupBy('vehicle_id')
             ->get();
 
         return response()->json($vehicle);

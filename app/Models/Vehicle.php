@@ -9,7 +9,7 @@ class Vehicle extends Model
     protected $table = 'vehicle';
 
     public function make() {
-        return $this->hasMany(Makes::class,'id','make_id');
+        return $this->hasOne(Makes::class,'id','make_id');
     }
 
     public function model() {

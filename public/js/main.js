@@ -155,7 +155,7 @@ class Request
         $.each(data,(key,val) => {
             let row = `<tr>
                                 <td>${key+1}</td>         
-                                <td>${val.make[0].name}</td>         
+                                <td>${val.make.name}</td>         
                                 <td>${val.model[0].name}</td>         
                                 <td>${val.type.name}</td>         
                                 <td>${val.year}</td>         
@@ -167,7 +167,6 @@ class Request
     }
 
     show(url,generate) {
-
        $.ajax({
            url : url,
            method : 'get',
@@ -203,11 +202,11 @@ class Request
         $.each(data,(key,val) => {
             let row = `<tr>
                                 <td>${key+1}</td>         
-                                <td>${val.make}</td>         
-                                <td>${val.model}</td>         
-                                <td>${val.type_name}</td>         
-                                <td>${val.year}</td>         
-                                <td><a href="/show-vehicle/${val.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>         
+                                <td>${val.vehicle.make.name}</td>         
+                                <td>${val.vehicle.model[0].name}</td>         
+                                <td>${val.vehicle.type.name}</td>         
+                                <td>${val.vehicle.year}</td>         
+                                <td><a href="/show-vehicle/${val.vehicle.id}" class="btn btn-danger"><i class="far fa-eye mr-2"></i> Show</a></td>         
                            </tr>`;
 
             table.find(`tbody`).append(row);
