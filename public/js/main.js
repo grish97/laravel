@@ -40,7 +40,7 @@ class Request
             year = $(`#year`).val();
         year = (year === 'Year') ? '' : year;
 
-        if(id) {
+        if((make || model || year) && id) {
             $.ajax({
                 url : '/fill-select',
                 method : 'post',
@@ -52,6 +52,10 @@ class Request
                 },
                 dataType : 'json',
             }).done(function(data) {
+                if(data.length === 0) {
+                    request.reset();
+                    return false;
+                }
                 request.generateSelect(data,elemId);
             });
         }
@@ -228,8 +232,8 @@ class Request
         this.selected = [];
 
         $.ajax({
-            url : `/reset`,
-            method : `post`,
+            url : `/`,
+            method : `get`,
             dataType : `json`,
         }).done(function(data) {
            $.each(data.makes,(key,value) => {

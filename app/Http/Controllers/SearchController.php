@@ -145,33 +145,27 @@ class SearchController extends Controller
 
     }
 
-    public function showSelected(Request $request,Vehicle $vehicle) {
-        $selected = array_filter($request->selected,function($elem) {
+    public function showSelected(Request $request,Vehicle $vehicle)
+    {
+        $selected = array_filter($request->selected, function ($elem) {
             return $elem != null;
         });
 
         $where = [];
 
-        foreach($selected as $key => $val) {
-            if($key != 'year') {
-                $key = $key.'_id';
+        foreach ($selected as $key => $val) {
+            if ($key != 'year') {
+                $key = $key . '_id';
             }
-            array_push($where,[$key,$val]);
+            array_push($where, [$key, $val]);
         }
 
         $data = $vehicle::query()
             ->where($where)
-            ->with('make','model','type')
+            ->with('make', 'model', 'type')
             ->get();
 
         return $data;
-    }
-
-    public function reset(Makes $make, Models $model,Vehicle $vehicle) {
-        $makes = $make::query()->groupBy('name')->get();
-        $models = $model::query()->groupBy('name')->get();
-        $years =  $vehicle::query()->select('id', 'year')->groupBy('year')->orderBy('year','desc')->get();
-        return response()->json(['makes' => $makes,'models' => $models,'years' => $years]);
     }
 
     public function showPart(Parts $parts,$id) {
